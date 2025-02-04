@@ -8,6 +8,7 @@ router.get("/", async (req: Request, res: Response) => {
     try {
         const clientID = req.body["clientID"]
         const account = await Account.findOne({ clientID: clientID})
+        console.log(account)
         if (account != null) {
             var privateKey = account.privateKey
             res.status(200).json(privateKey)
