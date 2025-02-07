@@ -1,3 +1,5 @@
+import axios from 'axios'
+import { useState } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
 function App() {
@@ -5,10 +7,19 @@ function App() {
   const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
 
+
+  const [privatekey, setPrivateKey] = useState<string>("")
   
-  const vippsAPI = () => {
+  const vippsAPI = async () => {
     // Redirect
-    console.log("Redirect")
+    try {
+      const data = axios.post("http://localhost:5173/test", {
+        clientID: 2222
+      })
+      .then((response => setPrivateKey(response.data)))
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
@@ -27,7 +38,7 @@ function App() {
         onClick={vippsAPI}>
         </vipps-mobilepay-button>
         <h2>Account</h2>
-
+        <p>{privatekey}</p>
         <div>
           status: {account.status}
           <br />
@@ -51,11 +62,18 @@ function App() {
             onClick={() => connect({ connector })}
             type="button"
           >
-            {connector.name}
+            {connector.name }
           </button>
         ))}
         <div>{status}</div>
         <div>{error?.message}</div>
+
+
+        <button
+
+        >
+          PRIVATE KEY DYNAMICO
+        </button>
       </div>
     </>
   )

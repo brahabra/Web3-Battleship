@@ -6,6 +6,8 @@ import mongoose from "mongoose";
 import { generatePrivateKey } from "viem/accounts"
 import qs from "qs";
 import axios from 'axios';
+import cors from "cors"
+import Account from "./models/account";
 const app = express()
 const port = 5173
 
@@ -31,7 +33,7 @@ db.once("open", () => console.log("Server connected to DB"))
 
 
 app.use(bodyParser.json())
-
+app.use(cors())
 
 app.get("/auth/vipps", async (req: Request, res: Response) => {
     //Should be randomly generated for secret stuffs
@@ -114,7 +116,28 @@ app.get("/", async (req: Request, res: Response) => {
 })
 
 
-
+app.post("/test", async (req: Request, res: Response) => {
+    try {
+        const clientID = req.body["clientID"]
+        const account = await Account.findOne({ clientID: clientID})
+        console.log(account)
+        if (account != null) {
+            var privateKey = account.privateKey
+            res.status(200).json(privateKey)
+        } else {
+            var newPrivateKey = generatePrivateKey()
+            await Account.create({
+                clientID: clientID,
+                privateKey : newPrivateKey
+            })
+            res.json(newPrivateKey)
+        }
+        
+    } catch (error) {
+        console.error(error)
+        res.status(500).json(error)
+    }
+})
 
 
 /*
@@ -128,3 +151,4 @@ app.get("/get/account", async (req: Request, res: Response) => {
 })
 */
 app.listen(port, () => console.log("Server Started"))
+
