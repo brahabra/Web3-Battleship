@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAccount, useConnect, useDisconnect } from 'wagmi'
 
 function App() {
@@ -13,20 +13,26 @@ function App() {
   const vippsAPI = async () => {
     // Redirect
     try {
+      window.location.href = "http://localhost:5173/auth/vipps";
+      /*
       const data = axios.get("http://localhost:5173/auth/vipps", {
-        headers: {
-          "Access-Control-Allow-Origin": "*"
-        }
       })
       data.then((response) => {
         setPrivateKey(response.data)
         console.log("DATA")
         localStorage.setItem('accesstoken', JSON.stringify(response.data))
-        })        
+        })
+        */        
     } catch (error) {
       console.error(error)
     }
   }
+
+  useEffect(() => {
+    const search = new URLSearchParams(window.location.search)
+    const accessToken = search.get("accesstoken") as string
+    localStorage.setItem("accesstoken", accessToken)
+  },[])
 
   return (
     <>

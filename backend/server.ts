@@ -30,10 +30,18 @@ db.on("error", (error) => {
 
 db.once("open", () => console.log("Server connected to DB"))
 
-
+var corsOptions = {
+    origin: ['http://apitest.vipps.no', 'localhost:5173'],
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }
 
 app.use(bodyParser.json())
-app.use(cors())
+app.use(cors({
+    origin: 'http://localhost:3000',
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true,
+}))
 
 app.get("/auth/vipps", async (req: Request, res: Response) => {
     //Should be randomly generated for secret stuffs
@@ -53,7 +61,6 @@ app.get("/auth/vipps", async (req: Request, res: Response) => {
     })
 
     const authURL = `${VIPPS_AUTH_URL}?${authParams}`;
-    console.log("Redirecting to VIPPS")
     res.redirect(authURL)
 })
 
@@ -103,8 +110,8 @@ app.get("/", async (req: Request, res: Response) => {
     console.log('User info:', userInfo);
 
 
-    res.redirect("http://localhost:3000/?accesstoken=${access_token}")
-    /*
+    res.redirect(`http://localhost:3000/?accesstoken=${access_token as string}`);
+        /*
         res.json({
         message: 'Login successful!',
         access_token,
@@ -150,9 +157,7 @@ app.post("/privatekey", async (req: Request, res: Response) => {
             },
         });
 
-        console.log(userInfoResponse)
-
-        const clientID = 2222
+        const clientID = userInfoResponse.data.nin
 
         const account = await Account.findOne({ clientID: clientID })
         console.log(account)

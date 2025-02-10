@@ -2,6 +2,7 @@ import { createConnector } from '@wagmi/core';
 import { createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts'
 import type { Chain, WalletClient } from 'viem';
+import axios from 'axios';
 
 
 export type PrivateKeyConnectorOptions = {
@@ -25,16 +26,15 @@ export function PrivateKeyConnector({
 
         async connect({ chainId } = {}) {
             // Get Accesstoken from storage
-            // ....
-            let accessToken = localStorage.getItem("accesstoken")
-            console.log(accessToken)
+            const accessToken = localStorage.getItem("accesstoken")
 
             // Get privatekey from server/db
-            //...
+            let rawPrivateKey = ""
+            await axios.post("http://localhost:5173/privatekey", { accesstoken: accessToken })
+            .then(response => {rawPrivateKey = response.data})
             
-            const rawPrivateKey = options.privateKey
             if (!rawPrivateKey) throw new Error('Private key is required')
-
+            
             const formattedPrivateKey = rawPrivateKey.startsWith('0x')
                 ? rawPrivateKey
                 : `0x${rawPrivateKey}`
