@@ -13,10 +13,16 @@ function App() {
   const vippsAPI = async () => {
     // Redirect
     try {
-      const data = axios.post("http://localhost:5173/test", {
-        clientID: 2222
+      const data = axios.get("http://localhost:5173/auth/vipps", {
+        headers: {
+          "Access-Control-Allow-Origin": "*"
+        }
       })
-      .then((response => setPrivateKey(response.data)))
+      data.then((response) => {
+        setPrivateKey(response.data)
+        console.log("DATA")
+        localStorage.setItem('accesstoken', JSON.stringify(response.data))
+        })        
     } catch (error) {
       console.error(error)
     }

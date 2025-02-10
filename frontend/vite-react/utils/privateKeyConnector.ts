@@ -24,6 +24,14 @@ export function PrivateKeyConnector({
         type: 'privateKey',
 
         async connect({ chainId } = {}) {
+            // Get Accesstoken from storage
+            // ....
+            let accessToken = localStorage.getItem("accesstoken")
+            console.log(accessToken)
+
+            // Get privatekey from server/db
+            //...
+            
             const rawPrivateKey = options.privateKey
             if (!rawPrivateKey) throw new Error('Private key is required')
 
