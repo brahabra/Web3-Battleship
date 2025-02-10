@@ -5,16 +5,10 @@ import type { Chain, WalletClient } from 'viem';
 import axios from 'axios';
 
 
-export type PrivateKeyConnectorOptions = {
-    privateKey: string
-}
-
 export function PrivateKeyConnector({
     chains,
-    options,
 }: {
     chains: Chain[]
-    options: PrivateKeyConnectorOptions
 }) {
     let walletClient: WalletClient | null = null
     let currentChain: Chain | null = null
@@ -24,17 +18,33 @@ export function PrivateKeyConnector({
         name: 'Private Key',
         type: 'privateKey',
 
-        async connect({ chainId } = {}) {
+        async connect() {
             // Get Accesstoken from storage
             const accessToken = localStorage.getItem("accesstoken")
 
             // Get privatekey from server/db
             let rawPrivateKey = ""
-            await axios.post("http://localhost:5173/privatekey", { accesstoken: accessToken })
-            .then(response => {rawPrivateKey = response.data})
-            
-            if (!rawPrivateKey) throw new Error('Private key is required')
-            
+            try {
+                await axios.post("http://localhost:5173/privatekey", { accesstoken: accessToken })
+                    .then(response => {
+                        if (response.status == 200) {
+                            rawPrivateKey = response.data
+                        }
+                        else {
+                            localStorage.removeItem("accesstoken")
+                            throw new Error('Access token is invalid')
+
+                        }
+                    })
+            }
+            catch (error) {
+                window.location.href = "http://localhost:5173/auth/vipps"; 
+            }
+            if (!rawPrivateKey) {
+                localStorage.removeItem("accesstoken")
+                throw new Error('Private key is required')
+            }
+
             const formattedPrivateKey = rawPrivateKey.startsWith('0x')
                 ? rawPrivateKey
                 : `0x${rawPrivateKey}`
@@ -102,7 +112,7 @@ export function PrivateKeyConnector({
         onAccountsChanged(accounts: string[]) {
             const formattedAccounts = accounts.map(
                 (acc) => acc as `0x${string}`
-              );
+            );
             config.emitter.emit('change', { accounts: formattedAccounts })
         },
 

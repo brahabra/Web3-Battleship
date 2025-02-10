@@ -156,7 +156,7 @@ app.post("/privatekey", async (req: Request, res: Response) => {
                 Authorization: `Bearer ${access_token}`,
             },
         });
-
+        
         const clientID = userInfoResponse.data.nin
 
         const account = await Account.findOne({ clientID: clientID })

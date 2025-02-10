@@ -1,38 +1,44 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { useAccount, useBalance, useConnect, useDisconnect } from 'wagmi'
 
 function App() {
   const account = useAccount()
   const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
-
-
   const [privatekey, setPrivateKey] = useState<string>("")
   
   const vippsAPI = async () => {
     // Redirect
-    try {
-      window.location.href = "http://localhost:5173/auth/vipps";
-      /*
-      const data = axios.get("http://localhost:5173/auth/vipps", {
-      })
-      data.then((response) => {
-        setPrivateKey(response.data)
-        console.log("DATA")
-        localStorage.setItem('accesstoken', JSON.stringify(response.data))
-        })
-        */        
-    } catch (error) {
-      console.error(error)
+    console.log(connectors)
+    if (localStorage.getItem("accesstoken") != null) {
+      console.log(connectors)
+      connect({connector: connectors[1]})
+    }
+    else {
+      try {
+        window.location.href = "http://localhost:5173/auth/vipps"; 
+      } catch (error) {
+        console.error(error)
+      }
     }
   }
 
+
+
+  // Get Accesstoken if present in URL, then remove it from the URL
   useEffect(() => {
     const search = new URLSearchParams(window.location.search)
     const accessToken = search.get("accesstoken") as string
-    localStorage.setItem("accesstoken", accessToken)
+    if (accessToken != null) {
+      localStorage.setItem("accesstoken", accessToken)
+      window.history.replaceState("","",'http://localhost:3000')  // Remove accesstoken from URL
+    }
   },[])
+
+  useEffect(() => {
+    console.log("balance")
+  },[account])
 
   return (
     <>
@@ -79,14 +85,7 @@ function App() {
         ))}
         <div>{status}</div>
         <div>{error?.message}</div>
-
-
-        <button
-
-        >
-          PRIVATE KEY DYNAMICO
-        </button>
-      </div>
+        </div>
     </>
   )
 }

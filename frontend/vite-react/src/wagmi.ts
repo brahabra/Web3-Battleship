@@ -8,9 +8,6 @@ export const config = createConfig({
     injected(),
     PrivateKeyConnector({
       chains: [mainnet, sepolia],
-      options: {
-        privateKey: '0x756775cf401a4cd933515f0e5a17cc5690a90d90dff2d7f1ef6db3958e660093',
-      },
     }),
   ],
   transports: {
