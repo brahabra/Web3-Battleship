@@ -1,7 +1,8 @@
 import { http, createConfig } from 'wagmi'
 import { mainnet, sepolia } from 'wagmi/chains'
-import { coinbaseWallet, injected, walletConnect } from 'wagmi/connectors'
+import { injected } from 'wagmi/connectors'
 import { PrivateKeyConnector } from "../utils/privateKeyConnector"
+
 export const config = createConfig({
   chains: [mainnet, sepolia],
   connectors: [
@@ -10,9 +11,10 @@ export const config = createConfig({
       chains: [mainnet, sepolia],
     }),
   ],
+  ssr: true,
   transports: {
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    [mainnet.id]: http("https://eth-sepolia.g.alchemy.com/v2/TP8LLuBZxjwI3RlpoTNsdImOlO_iLdNo"),
+    [sepolia.id]: http("https://eth-sepolia.g.alchemy.com/v2/TP8LLuBZxjwI3RlpoTNsdImOlO_iLdNo"),
   },
 })
 
