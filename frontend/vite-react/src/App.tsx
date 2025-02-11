@@ -6,7 +6,6 @@ function App() {
   const account = useAccount()
   const { connectors, connect, status, error } = useConnect()
   const { disconnect } = useDisconnect()
-  const [privatekey, setPrivateKey] = useState<string>("")
   
   const vippsAPI = async () => {
     // Redirect
@@ -33,6 +32,7 @@ function App() {
     if (accessToken != null) {
       localStorage.setItem("accesstoken", accessToken)
       window.history.replaceState("","",'http://localhost:3000')  // Remove accesstoken from URL
+      connect({connector: connectors[1]})
     }
   },[])
 
@@ -56,7 +56,6 @@ function App() {
         onClick={vippsAPI}>
         </vipps-mobilepay-button>
         <h2>Account</h2>
-        <p>{privatekey}</p>
         <div>
           status: {account.status}
           <br />
