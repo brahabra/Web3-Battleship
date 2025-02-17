@@ -20,10 +20,13 @@ contract Battleship {
     mapping(address => PlayerData) private players;
 
     // Events to inform off-chain listeners about game state changes.
+    event PlayerJoined(address indexed player);
     event GameStarted(bool started);
     event ShipPlacement(address indexed player, uint8[] positions);
+    event BothPlayersPlacedShips(bool placed);
     event MoveResult(address indexed player, bool hit, uint8 pos);
     event GameOver(address winner);
+    event GameReset(bool reset);
 
     /// @notice Join the game. The first caller becomes player1; the second becomes player2.
     function join() public {
@@ -31,6 +34,7 @@ contract Battleship {
 
         if (player1 == address(0)) {
             player1 = msg.sender;
+            emit PlayerJoined(player1);
         } else {
             require(msg.sender != player1, "Already joined as player1");
             player2 = msg.sender;
@@ -61,6 +65,11 @@ contract Battleship {
         pd.remainingCells = uint8(positions.length);
         pd.shipsPlaced = true;
         emit ShipPlacement(msg.sender, positions);
+
+        // Check if both players have placed their ships.
+        if (players[player1].shipsPlaced && players[player2].shipsPlaced) {
+            emit BothPlayersPlacedShips(true);
+        }
     }
 
     /// @notice Make a move by specifying coordinates (x, y).
@@ -93,11 +102,30 @@ contract Battleship {
             }
         }
 
+        // Your own address
         emit MoveResult(msg.sender, hit, pos);
 
         // Switch turns if the game is not over.
         if (!gameOver) {
             whoseTurn = opponent;
         }
+    }
+
+    function resetGame() public {
+        // Save current player addresses locally.
+        address _player1 = player1;
+        address _player2 = player2;
+        // Delete data
+        if (_player1 != address(0)) {
+            delete players[_player1];
+        }
+        if (_player2 != address(0)) {
+            delete players[_player2];
+        }
+        player1 = address(0);
+        player2 = address(0);
+        whoseTurn = address(0);
+
+        emit GameReset(true);
     }
 }

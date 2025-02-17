@@ -1,14 +1,12 @@
 import {
-  useReadContract,
-  useSendTransaction,
   useWriteContract,
   useWatchContractEvent,
   usePublicClient,
+  useAccount,
 } from "wagmi";
 import { abi } from "../utils/abi";
 import { contractAddress } from "../utils/contractAddress";
 import { useEffect, useState } from "react";
-import { parseEther } from "viem";
 import {
   DndContext,
   type DragEndEvent,
@@ -18,9 +16,13 @@ import {
 import type { GridData } from "../types/gridTypes";
 import type { ShipDataContract } from "../types/shipTypes";
 import Ship from "./ship";
-import DroppableGridCell from "./cell";
+import DroppableGridCell from "./DroppableGridCell";
 
-function GameGrid() {
+import { Button } from '@mantine/core';
+import { Coordinate } from "../types/coordinate";
+
+const GameGrid = () => {
+  const account = useAccount();
   const { writeContract } = useWriteContract();
   const publicClient = usePublicClient();
 
@@ -63,8 +65,14 @@ function GameGrid() {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
+  const [shipsSubmitted, setShipsSubmitted] = useState(false);
+  const [moveMessage, setMoveMessage] = useState("");
+  const [turnMessage, setTurnMessage] = useState("");
+  const [bothPlayersPlacedShips, setBothPlayersPlacedShips] = useState(false);
+  const [shipPlacementPlayer ,setShipPlacementPlayer] = useState("");
+  const [playerJoined, setPlayerJoined] = useState("");
   const [gameStarted, setGameStarted] = useState(false);
-  const [placeShip, setPlaceShips] = useState(false);
+  const [placeShip, setPlaceShips] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [shipOrientations, setShipsOrientations] = useState<boolean[]>([
     false,
@@ -87,20 +95,6 @@ function GameGrid() {
   // (We no longer need playerData for joining the game)
   // const playerData = { grid: grid, hitsReceived: 0 };
 
-  const { sendTransaction } = useSendTransaction();
-
-  const player1 = useReadContract({
-    abi,
-    address: contractAddress,
-    functionName: "player1",
-  });
-
-  const player2 = useReadContract({
-    abi,
-    address: contractAddress,
-    functionName: "player2",
-  });
-
   useWatchContractEvent({
     address: contractAddress,
     abi,
@@ -113,13 +107,147 @@ function GameGrid() {
     },
   });
 
+  useWatchContractEvent({
+    address: contractAddress,
+    abi,
+    eventName: "PlayerJoined",
+    onLogs(logs) {
+      setPlayerJoined(logs["0"].args.player ?? "");
+    },
+    onError(error) {
+      console.log("Error", error);
+    },
+  });
+
+  useWatchContractEvent({
+    address: contractAddress,
+    abi,
+    eventName: "ShipPlacement",
+    onLogs(logs) {
+      setShipPlacementPlayer(logs["0"].args.player ?? "");
+    },
+    onError(error) {
+      console.log("Error", error);
+    },
+  });
+
+  useWatchContractEvent({
+    address: contractAddress,
+    abi,
+    eventName: "BothPlayersPlacedShips",
+    onLogs(logs) {
+      setBothPlayersPlacedShips(logs["0"].args.placed ?? false);
+    },
+    onError(error) {
+      console.log("Error", error);
+    },
+  });
+
+  useWatchContractEvent({
+    address: contractAddress,
+    abi,
+    eventName: "MoveResult",
+    onLogs(logs) {
+      console.log(logs["0"].args ?? "");
+      const data = logs["0"].args 
+      if (typeof data.pos === 'number') {} else {throw new Error("data.pos is undefined")}
+      const coordinate = intToCoordinate(data.pos)
+      
+      
+      if (data.player === account.address) {
+        // Your move was made, so update enemy grid.
+        if (data.hit) {
+          enemyGrid[coordinate.x][coordinate.y] = 3;
+          setMoveMessage("You shot and hit!");
+        } else {
+          enemyGrid[coordinate.x][coordinate.y] = 2;
+          setMoveMessage("You shot and missed!");
+        }
+        // After your move, it's your opponent's turn.
+        setTurnMessage("Opponent's turn");
+      } else {
+        // Opponent's move; update your grid.
+        if (data.hit) {
+          grid[coordinate.x][coordinate.y] = 3;
+          setMoveMessage("Opponent shot and hit!");
+        } else {
+          grid[coordinate.x][coordinate.y] = 2;
+          setMoveMessage("Opponent shot and missed!");
+        }
+        // After opponent's move, it's your turn.
+        setTurnMessage("Your turn");
+      }
+    },
+    onError(error) {
+      console.log("Error", error);
+    },
+  });
+
+  const intToCoordinate = (value: number): Coordinate => {
+    const x = Math.floor(value / 10);
+    const y = value % 10;
+    return {x, y}
+  }
+
   useEffect(() => {
     // DEBUGGING
-    gameStarted && console.log("Game started!");
-  }, [gameStarted]);
+    //account.address && console.log("Address of this player: ", account.address);
+    playerJoined && console.log("Player joined:", playerJoined);
+    //gameStarted && console.log("Game started!");
+    shipPlacementPlayer && console.log("Ship placement player:", shipPlacementPlayer);
+    bothPlayersPlacedShips && console.log("Both players placed ships!");
+  }, [account.address, playerJoined, gameStarted, shipPlacementPlayer]);
 
   // Used for fetching recent events (helps keep data on refresh)
   useEffect(() => {
+    const fetchshipPlacementPlayer = async () => {
+      try {
+        const latestBlock = await publicClient.getBlockNumber();
+        const fromBlock = latestBlock - BigInt(500);
+        const pastShipPlacementEvents = await publicClient.getContractEvents({
+          address: contractAddress,
+          abi: abi,
+          eventName: "ShipPlacement",
+          fromBlock: fromBlock,
+          toBlock: "latest",
+        });
+
+        if (pastShipPlacementEvents.length > 0) {
+          const latestEvent =
+            pastShipPlacementEvents[pastShipPlacementEvents.length - 1];
+          setShipPlacementPlayer(latestEvent.args.player ?? "");
+        } else {
+          console.log("OLD DATA: CONSIDER RESETTING GAME");
+        }
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+      }
+    }
+
+    const fetchRecentEvents = async () => {
+      try {
+        const latestBlock = await publicClient.getBlockNumber();
+        const fromBlock = latestBlock - BigInt(500);
+        const pastPlayerJoinedEvents = await publicClient.getContractEvents({
+          address: contractAddress,
+          abi: abi,
+          eventName: "PlayerJoined",
+          fromBlock: fromBlock,
+          toBlock: "latest",
+        });
+
+        if (pastPlayerJoinedEvents.length > 0) {
+          const latestEvent =
+            pastPlayerJoinedEvents[pastPlayerJoinedEvents.length - 1];
+          setPlayerJoined(latestEvent.args.player ?? "");
+        } else {
+          console.log("OLD DATA: CONSIDER RESETTING GAME");
+        }
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+      }  
+    }
+
     const fetchLastLogs = async () => {
       try {
         const latestBlock = await publicClient.getBlockNumber();
@@ -145,7 +273,9 @@ function GameGrid() {
       }
     };
 
-    fetchLastLogs();
+    //fetchshipPlacementPlayer();
+    //fetchRecentEvents();
+    //fetchLastLogs();
   }, [publicClient]);
 
   const handleOrientationChange = (id: number, isHorizontal: boolean) => {
@@ -166,7 +296,7 @@ function GameGrid() {
     const col = Number(tempHover[2]);
     const updatedPlacedShips = [...placedShips];
 
-    let coordinates: [number, number][] = [];
+    const coordinates: [number, number][] = [];
     const updatedGrid = grid.map((rowArr, rowIndex) =>
       rowArr.map((cell, colIndex) => {
         if (!shipOrientations[shipID]) {
@@ -180,9 +310,8 @@ function GameGrid() {
               updatedPlacedShips[shipID] = true;
               coordinates.push([rowIndex, colIndex]);
               return 1;
-            } else {
-              return grid[rowIndex][colIndex];
             }
+              return grid[rowIndex][colIndex];
           }
         } else {
           // Vertical ship placement
@@ -195,9 +324,8 @@ function GameGrid() {
               updatedPlacedShips[shipID] = true;
               coordinates.push([rowIndex, colIndex]);
               return 1;
-            } else {
-              return grid[rowIndex][colIndex];
             }
+              return grid[rowIndex][colIndex];
           }
         }
         return grid[rowIndex][colIndex];
@@ -278,13 +406,11 @@ function GameGrid() {
     return 0;
   };
 
-  const placeShipsButton = () => {
-    setPlaceShips(!placeShip);
-  };
-
   function colorByState(state: number) {
-    if (state === 0) return "#3d3d3d";
+    if (state === 0) return "#050505";
     if (state === 1) return "#bb1010";
+    if (state === 2) return "#ffffff";
+    if (state === 3) return "#bb1010";
   }
 
   return (
@@ -309,196 +435,188 @@ function GameGrid() {
           flexDirection: "column",
           alignItems: "center",
           gap: "10px",
-          marginTop: "20px",
+          marginTop: "60px",
         }}
       >
-        <button
-          type="button"
-          onClick={() =>
-            sendTransaction({
-              to: "0x71b604B6C2F41Fa91Dd0e3e41221C9c6c6c75313",
-              value: parseEther("0.1"),
-            })
-          }
-        >
-          Send Transaction
-        </button>
-
-        {/* Updated Join button: now calls join() without passing extra data */}
-        <button
-          type="button"
-          onClick={() =>
-            writeContract({
-              abi,
-              address: contractAddress,
-              functionName: "join",
-              args: [],
-            })
-          }
-        >
-          Join a game!
-        </button>
-
-        <button
-          type="button"
-          style={{
-            backgroundColor: "#04AA6D",
-            border: "none",
-            color: "white",
-            padding: "6px 22px",
-            borderRadius: "12px",
-            textAlign: "center",
-            textDecoration: "none",
-            display: "inline-block",
-            fontSize: "16px",
-          }}
-          onClick={placeShipsButton}
-        >
-          <h3>Place ships</h3>
-        </button>
-
-        {/* New Submit Ships button: sends the encoded ship positions to the contract */}
-        {shipPositions.length > 0 && (
-          <button
-            type="button"
-            style={{
-              backgroundColor: "#007BFF",
-              border: "none",
-              color: "white",
-              padding: "6px 22px",
-              borderRadius: "12px",
-              textAlign: "center",
-              textDecoration: "none",
-              display: "inline-block",
-              fontSize: "16px",
-            }}
-            onClick={() =>
-              writeContract({
-                abi,
-                address: contractAddress,
-                functionName: "placeShips",
-                args: [shipPositions],
-              })
-            }
-          >
-            Submit Ships
-          </button>
-        )}
-
-        <div>
-          <p>Player1: {player1.data}</p>
-          <p>Player2: {player2.data}</p>
-          {player1.data && player2.data && (
-            <p>Both players have joined, let the game begin!</p>
-          )}
-        </div>
-
-        <DndContext
-          onDragEnd={handleDragEnd}
-          onDragOver={handleDragOver}
-          onDragStart={handleDragStart}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(10, 40px)",
-                gap: "2px",
-                backgroundColor: "#1212ab",
-                padding: "2px",
-              }}
-            >
-              {(isDragging ? tempGrid : grid).map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <DroppableGridCell
-                    key={`${rowIndex}-${colIndex}`}
-                    row={rowIndex}
-                    col={colIndex}
-                    state={cell}
-                  />
-                ))
-              )}
-            </div>
-            <div>
-              {placeShip && (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    padding: "20px",
-                  }}
+        {!gameStarted && (
+          <div>
+            {account.address === playerJoined ? (
+              <h2 className="font-bold text-2xl py-8">Waiting for opponent...</h2>
+            ) : (
+                <Button
+                  variant="filled" color="green" size="xl" radius="xl"
+                  type="button"
+                  onClick={() =>
+                    writeContract({
+                      abi,
+                      address: contractAddress,
+                      functionName: "join",
+                      args: [],
+                    })
+                  }
                 >
-                  {[0, 1, 2, 3, 4].map((id) =>
-                    !placedShips[id] ? (
-                      <Ship
-                        key={id}
-                        id={id}
-                        length={lengthByIDShipRendering(id)}
-                        onOrientationChange={handleOrientationChange}
-                      />
-                    ) : null
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-        </DndContext>
-
-        <h2>ENEMY TERRITORY</h2>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(10, 40px)",
-              gap: "2px",
-              backgroundColor: "#1212ab",
-              padding: "2px",
-            }}
-          >
-            {enemyGrid.map((row, rowIndex) =>
-              row.map((cell, colIndex) => (
+                  Join a game!
+                </Button>
+            )} 
+          </div> 
+        )}
+        
+        <div className="flex mt-40">
+          {gameStarted && (
+            <div>
+              <DndContext
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDragStart={handleDragStart}
+              >
                 <div
-                  key={`${row}-${colIndex}`}
                   style={{
-                    width: "40px",
-                    height: "40px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    border: "1px solid black",
-                    cursor: "pointer",
-                    backgroundColor: colorByState(cell),
                   }}
                 >
-                  <button
-                    type="button"
-                    onClick={() =>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(10, 40px)",
+                      gap: "2px",
+                      backgroundColor: "#1212ab",
+                      padding: "2px",
+                    }}
+                  >
+                    {(isDragging ? tempGrid : grid).map((row, rowIndex) =>
+                      row.map((cell, colIndex) => (
+                        <DroppableGridCell
+                          key={`${rowIndex}-${colIndex}`}
+                          row={rowIndex}
+                          col={colIndex}
+                          state={cell}
+                        />
+                      ))
+                    )}
+                  </div>
+                  <div>
+                    {placeShip && (
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          padding: "20px",
+                        }}
+                      >
+                        {[0, 1, 2, 3, 4].map((id) =>
+                          !placedShips[id] ? (
+                            <Ship
+                              key={id}
+                              id={id}
+                              length={lengthByIDShipRendering(id)}
+                              onOrientationChange={handleOrientationChange}
+                            />
+                          ) : null
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </DndContext>
+              {placedShips.every(Boolean) && !shipsSubmitted && (
+                <div className="flex justify-center mt-2">
+                  <Button
+                    size="md" radius="md"
+                    onClick={() => {
+                      setShipsSubmitted(true)
                       writeContract({
                         abi,
                         address: contractAddress,
-                        functionName: "move",
-                        args: [rowIndex, colIndex],
+                        functionName: "placeShips",
+                        args: [shipPositions],
                       })
-                    }
+                    }}
                   >
-                    Fire
-                  </button>
+                    Submit Ships
+                  </Button>
                 </div>
-              ))
-            )}
-          </div>
+              )}
+            </div>
+          )}
+    
+          {!bothPlayersPlacedShips ? (
+            <div>
+              {shipPlacementPlayer === account.address && (
+                <h2>Waiting for opponent to place their ships...</h2>  
+              )}
+            </div>
+          ) : (
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(10, 40px)",
+                    gap: "2px",
+                    backgroundColor: "#1212ab",
+                    padding: "2px",
+                  }}
+                >
+                  {enemyGrid.map((row, rowIndex) =>
+                    row.map((cell, colIndex) => (
+                      <div
+                        key={`${row}-${colIndex}`}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: "1px solid black",
+                          cursor: "pointer",
+                          backgroundColor: colorByState(cell),
+                        }}
+                      >
+                        <button
+                          className=" cursor-pointer"
+                          type="button"
+                          onClick={() =>
+                            writeContract({
+                              abi,
+                              address: contractAddress,
+                              functionName: "move",
+                              args: [rowIndex, colIndex],
+                            })
+                          }
+                        >
+                          {(cell === 2 || cell === 3) ? (
+                            <span
+                              style={{
+                                color: "#000000",
+                                fontSize: "30px",
+                                fontWeight: "bold",
+                                lineHeight: 1,
+                              }}
+                            >
+                              x
+                            </span>
+                          ) : ( <span>Fire</span>
+                        )}
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div>
+          <h2>{moveMessage}</h2>
+          <h2>{turnMessage}</h2>
         </div>
       </div>
     </>

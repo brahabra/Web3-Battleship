@@ -4,12 +4,38 @@ export const abi = [
     "inputs": [
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "placed",
+        "type": "bool"
+      }
+    ],
+    "name": "BothPlayersPlacedShips",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "winner",
         "type": "address"
       }
     ],
     "name": "GameOver",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "reset",
+        "type": "bool"
+      }
+    ],
+    "name": "GameReset",
     "type": "event"
   },
   {
@@ -58,6 +84,19 @@ export const abi = [
         "internalType": "address",
         "name": "player",
         "type": "address"
+      }
+    ],
+    "name": "PlayerJoined",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -72,49 +111,6 @@ export const abi = [
   {
     "inputs": [],
     "name": "gameOver",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "getRemainingCells",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      },
-      {
-        "internalType": "uint8",
-        "name": "pos",
-        "type": "uint8"
-      }
-    ],
-    "name": "hasShip",
     "outputs": [
       {
         "internalType": "bool",
@@ -187,6 +183,13 @@ export const abi = [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "resetGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
