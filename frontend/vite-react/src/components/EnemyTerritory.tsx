@@ -6,142 +6,140 @@ import { useAccount, useWriteContract } from "wagmi";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
 import { useGameContext } from "../contexts/GameContext";
 
-import type { BothPlayersPlacedShipsEvent, MoveResultEvent, ShipPlacementEvent } from "../types/eventTypes";
+import type { MoveResultEvent } from "../types/eventTypes";
 import type { Coordinate } from "../types/coordinate";
-import usePastEventValue from "../hooks/usePastEventValue";
 
 const EnemyTerritory = () => {
-  const { playerJoined, grid, setMoveMessage, turnMessage, setTurnMessage } = useGameContext();
+  const {
+    grid,
+    setGrid,
+    setMoveMessage,
+    turnMessage,
+    setTurnMessage,
+    shipPlacementPlayer,
+    bothPlayersPlacedShips,
+    setGameReset,
+  } = useGameContext();
 
   const account = useAccount();
   const { writeContract } = useWriteContract();
 
-  const [shipPlacementPlayer ,setShipPlacementPlayer] = useState("");
-  const [bothPlayersPlacedShips, setBothPlayersPlacedShips] = useState(false);
+  const [enemyGrid, setEnemyGrid] = useState<GridData>([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
 
-  const [enemyGrid] = useState<GridData>([
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]);
-
-    useWatchContractEventListener({
-      eventName: "ShipPlacement",
-      onEvent: (logs: ShipPlacementEvent[]) => {
-        setShipPlacementPlayer(logs[0].args.player ?? "");
-        
-      },
-    });
-
-    useWatchContractEventListener({
-      eventName: "BothPlayersPlacedShips",
-      onEvent: (logs: BothPlayersPlacedShipsEvent[]) => {
-        setBothPlayersPlacedShips(logs[0].args.placed ?? false);
-        if (playerJoined === account.address) {
-          setTurnMessage("Your turn");
-        } else {
-          setTurnMessage("Opponent's turn");
-        }
-      },
-    });
-
-    useWatchContractEventListener({
-      eventName: "MoveResult",
-      onEvent: (logs: MoveResultEvent[]) => {
-        const data = logs[0].args;
-        if (typeof data.pos === 'number') {} else {throw new Error("data.pos is undefined")}
-        const coordinate = intToCoordinate(data.pos);
-        
-        if (data.player === account.address) {
-          // Your move was made, so update enemy grid.
-          if (data.hit) {
-            enemyGrid[coordinate.x][coordinate.y] = 3;
-            setMoveMessage("You shot and hit!");
-          } else {
-            enemyGrid[coordinate.x][coordinate.y] = 2;
-            setMoveMessage("You shot and missed!");
-          }
-          // After your move, it's your opponent's turn.
-          setTurnMessage("Opponent's turn");
-        } else {
-          // Opponent's move; update your grid.
-          if (data.hit) {
-            grid[coordinate.x][coordinate.y] = 3;
-            setMoveMessage("Opponent shot and hit!");
-          } else {
-            grid[coordinate.x][coordinate.y] = 2;
-            setMoveMessage("Opponent shot and missed!");
-          }
-          // After opponent's move, it's your turn.
-          setTurnMessage("Your turn");
-        }
+  useWatchContractEventListener({
+    eventName: "MoveResult",
+    onEvent: (logs: MoveResultEvent[]) => {
+      const data = logs[0].args;
+      if (typeof data.pos !== "number") {
+        throw new Error("data.pos is undefined");
       }
-    });
+      const coordinate = intToCoordinate(data.pos);
+      let updatedMoveMessage = "";
+      let updatedTurnMessage = "";
 
-    const intToCoordinate = (value: number): Coordinate => {
-      const x = Math.floor(value / 10);
-      const y = value % 10;
-      return {x, y}
-    }
-
-    useWatchContractEventListener({
-      eventName: "GameOver",
-      onEvent: (logs) => {
-        const winner = logs[0].args.winner;
-        // Check if the winner is the current account.
-        setTurnMessage("");
-        if (winner === account.address) {
-          setMoveMessage("You won the game!");
+      if (data.player === account.address) {
+        // Your move was made, so update enemy grid.
+        if (data.hit) {
+          enemyGrid[coordinate.x][coordinate.y] = 3;
+          updatedMoveMessage = "You shot and hit!";
         } else {
-          setMoveMessage("You lost the game!");
+          enemyGrid[coordinate.x][coordinate.y] = 2;
+          updatedMoveMessage = "You shot and missed!";
         }
+        updatedTurnMessage = "Opponent's turn";
+        setEnemyGrid(enemyGrid);
+        localStorage.setItem("enemyGrid", JSON.stringify(enemyGrid));
+      } else {
+        // Opponent's move; update your grid.
+        if (data.hit) {
+          grid[coordinate.x][coordinate.y] = 3;
+          updatedMoveMessage = "Opponent shot and hit!";
+        } else {
+          grid[coordinate.x][coordinate.y] = 2;
+          updatedMoveMessage = "Opponent shot and missed!";
+        }
+        updatedTurnMessage = "Your turn";
+        setGrid(grid);
+        localStorage.setItem("grid", JSON.stringify(grid));
       }
-    })
 
-    const shipPlacementValue = usePastEventValue<string>(
-      "ShipPlacement",
-      (args) => args.player ?? "",
-      ""
-    );
-  
-    const bothPlayersPlacedShipsValue = usePastEventValue<boolean>(
-      "BothPlayersPlacedShips",
-      (args) => args.placed ?? false,
-      false
-    );
-  
-    const moveResultValue = usePastEventValue<{ pos: number; player: string; hit: boolean }>(
-      "MoveResult",
-      (args) => ({
-        pos: args.pos,
-        player: args.player,
-        hit: args.hit,
-      }),
-      { pos: 0, player: "", hit: false }
-    );
+      setMoveMessage(updatedMoveMessage);
+      setTurnMessage(updatedTurnMessage);
 
-    useEffect(() => {
-      setShipPlacementPlayer(shipPlacementValue);
-    }, [shipPlacementValue]);
-  
-    useEffect(() => {
-      setBothPlayersPlacedShips(bothPlayersPlacedShipsValue);
-    }, [bothPlayersPlacedShipsValue]); 
+      localStorage.setItem("moveMessage", JSON.stringify(updatedMoveMessage));
+      localStorage.setItem("turnMessage", JSON.stringify(updatedTurnMessage));
+    },
+  });
 
-    function colorByState(state: number) {
-      if (state === 0) return "#050505";
-      if (state === 1) return "#bb1010";
-      if (state === 2) return "#ffffff";
-      if (state === 3) return "#bb1010";
+  // On component mount, load saved event values from localStorage.
+  useEffect(() => {
+    const savedMoveMessage = localStorage.getItem("moveMessage");
+    if (savedMoveMessage) {
+      setMoveMessage(JSON.parse(savedMoveMessage));
     }
-  
+    const savedTurnMessage = localStorage.getItem("turnMessage");
+    if (savedTurnMessage) {
+      setTurnMessage(JSON.parse(savedTurnMessage));
+    }
+    const savedEnemyGrid = localStorage.getItem("enemyGrid");
+    if (savedEnemyGrid) {
+      setEnemyGrid(JSON.parse(savedEnemyGrid));
+    }
+    const savedGrid = localStorage.getItem("grid");
+    if (savedGrid) {
+      setGrid(JSON.parse(savedGrid));
+    }
+  }, []);
+
+  const intToCoordinate = (value: number): Coordinate => {
+    const x = Math.floor(value / 10);
+    const y = value % 10;
+    return { x, y };
+  };
+
+  useWatchContractEventListener({
+    eventName: "GameOver",
+    onEvent: (logs) => {
+      const winner = logs[0].args.winner;
+      // Check if the winner is the current account.
+      setTurnMessage("");
+      if (winner === account.address) {
+        setMoveMessage("You won the game!");
+      } else {
+        setMoveMessage("You lost the game!");
+      }
+      setTimeout(() => {
+        setGameReset(true);
+      }, 5000);
+    },
+  });
+
+  const colorByState = (cell: number) => {
+    switch (cell) {
+      case 0:
+        return "bg-[#050505]";
+      case 1:
+        return "bg-[#bb1010]";
+      case 2:
+        return "bg-[#ffffff]";
+      case 3:
+        return "bg-[#bb1010]";
+      default:
+        return "bg-black";
+    }
+  };
+
   return (
     <div>
       {!bothPlayersPlacedShips ? (
@@ -151,71 +149,47 @@ const EnemyTerritory = () => {
           )}
         </div>
       ) : (
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: turnMessage === "Your turn" ? "auto" : "none",
-              opacity: turnMessage === "Your turn" ? 1 : 0.5,
-            }}
-          >
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(10, 40px)",
-                gap: "2px",
-                backgroundColor: "#1212ab",
-                padding: "2px",
-              }}
-            >
-              {enemyGrid.map((row, rowIndex) =>
-                row.map((cell, colIndex) => (
-                  <div
-                    key={`${row}-${colIndex}`}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: "1px solid black",
-                      cursor: "pointer",
-                      backgroundColor: colorByState(cell),
-                    }}
-                  >
-                    <button
-                      className=" cursor-pointer"
-                      type="button"
-                      onClick={() =>
-                        writeContract({
-                          abi,
-                          address: contractAddress,
-                          functionName: "move",
-                          args: [rowIndex, colIndex],
-                        })
-                      }
+        <div
+          className={`flex items-center justify-center ${
+            turnMessage === "Your turn"
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-50"
+          }`}
+        >
+          <div className="grid grid-cols-10 gap-0.5 bg-[#1212ab] p-0.5">
+            {enemyGrid.map((row, rowIndex) =>
+              row.map((cell, colIndex) => (
+                <button
+                  key={`${row}-${colIndex}`}
+                  disabled={cell === 2 || cell === 3}
+                  className={`flex items-center justify-center border border-black w-10 h-10 ${colorByState(cell)} ${cell !== 2 && cell !== 3 && "cursor-pointer hover:bg-slate-700"}`}
+                  type="button"
+                  onClick={() =>
+                    writeContract({
+                      abi,
+                      address: contractAddress,
+                      functionName: "move",
+                      args: [rowIndex, colIndex],
+                    })
+                  }
+                >
+                  {cell === 2 || cell === 3 ? (
+                    <span
+                      style={{
+                        color: "#000000",
+                        fontSize: "30px",
+                        fontWeight: "bold",
+                        lineHeight: 1,
+                      }}
                     >
-                      {cell === 2 || cell === 3 ? (
-                        <span
-                          style={{
-                            color: "#000000",
-                            fontSize: "30px",
-                            fontWeight: "bold",
-                            lineHeight: 1,
-                          }}
-                        >
-                          x
-                        </span>
-                      ) : (
-                        <span>Fire</span>
-                      )}
-                    </button>
-                  </div>
-                ))
-              )}
-            </div>
+                      x
+                    </span>
+                  ) : (
+                    <span>Fire</span>
+                  )}
+                </button>
+              ))
+            )}
           </div>
         </div>
       )}

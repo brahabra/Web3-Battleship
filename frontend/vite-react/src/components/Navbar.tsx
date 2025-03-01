@@ -2,15 +2,17 @@ import { Button } from "@mantine/core";
 import { useAccount, useDisconnect, useWriteContract } from "wagmi";
 import { abi } from "../utils/abi";
 import { contractAddress } from "../utils/contractAddress";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
+import { useGameContext } from "../contexts/GameContext";
 
 const Navbar = () => {
   const account = useAccount();
+
+  const { gameReset, setGameReset } = useGameContext();
+
   const { disconnect } = useDisconnect();
   const { writeContract } = useWriteContract();
-
-  const [gameReset, setGameReset] = useState<boolean>(false);
 
   useWatchContractEventListener({
     eventName: "GameReset",
@@ -23,7 +25,25 @@ const Navbar = () => {
 
   useEffect(() => {
     if (gameReset) {
-      // Trigger a page refresh when gameReset becomes true.
+      // Clear localStorage items related to the game.
+      localStorage.removeItem("gameStarted");
+      localStorage.removeItem("firstPlayerJoined");
+      localStorage.removeItem("secondPlayerJoined");
+      localStorage.removeItem("showGameUnderway");
+
+      localStorage.removeItem("shipPlacementPlayer");
+      localStorage.removeItem("grid");
+      localStorage.removeItem("shipsSubmitted");
+      localStorage.removeItem("placedShips");
+      localStorage.removeItem("shipPositions");
+      localStorage.removeItem("bothPlayersPlacedShips");
+
+      localStorage.removeItem("enemyGrid");
+      localStorage.removeItem("shipPositions");
+      localStorage.removeItem("moveMessage");
+      localStorage.removeItem("turnMessage");
+
+      // Then trigger a page refresh.
       window.location.reload();
     }
   }, [gameReset]);
