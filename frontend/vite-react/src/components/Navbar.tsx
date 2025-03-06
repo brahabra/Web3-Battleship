@@ -1,17 +1,48 @@
-import { Button } from "@mantine/core";
+import { Button, Loader } from "@mantine/core";
 import { useAccount, useDisconnect, useWriteContract } from "wagmi";
 import { abi } from "../utils/abi";
 import { contractAddress } from "../utils/contractAddress";
-import { useEffect, useState } from "react";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
+import { GameResetEvent } from "../types/eventTypes";
+import { useEffect, useRef, useState } from "react";
+import { useGameContext } from "../contexts/GameContext";
 
 const Navbar = () => {
   const account = useAccount();
-
   const { disconnect } = useDisconnect();
   const { writeContract } = useWriteContract();
 
-  const [gameReset, setGameReset] = useState<boolean>(false);
+  const { gameReset, setGameReset, setErrorMessage } = useGameContext();
+
+  const timeoutRef = useRef<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  useWatchContractEventListener({
+    eventName: "GameReset",
+    onEvent: (_logs: GameResetEvent[]) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null
+      }
+      setIsLoading(false);
+    },
+  });
+
+  const handleGameReset = () => {
+    setIsLoading(true)
+    timeoutRef.current = window.setTimeout(() => {
+      setIsLoading(false)
+      timeoutRef.current = null;
+      setErrorMessage("Failed to reset game. Please try again")
+    }, 60000); // 60sec timeout if no transaction is validated
+
+    writeContract({
+      abi,
+      address: contractAddress,
+      functionName: "resetGame",
+      args: [],
+    })
+  }
 
   useWatchContractEventListener({
     eventName: "GameReset",
@@ -61,25 +92,30 @@ const Navbar = () => {
           >
             Disconnect
           </Button>
-
-          <Button
-            variant="red"
-            color="teal"
-            size="sm"
-            radius="sm"
-            className="mr-2"
-            type="button"
-            onClick={() =>
-              writeContract({
-                abi,
-                address: contractAddress,
-                functionName: "resetGame",
-                args: [],
-              })
-            }
-          >
-            Reset game
-          </Button>
+          {isLoading ?
+            <Button
+              variant="red"
+              color="teal"
+              size="sm"
+              radius="sm"
+              className="mr-2"
+              type="button"
+              disabled={true}
+            > <Loader></Loader>
+            </Button>
+            :
+            <Button
+              variant="red"
+              color="teal"
+              size="sm"
+              radius="sm"
+              className="mr-2"
+              type="button"
+              onClick={() => handleGameReset()}
+            >
+              Reset game
+            </Button>
+          }
         </div>
       )}
     </div>

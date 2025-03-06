@@ -1,26 +1,33 @@
 import type { GridData } from "../types/gridTypes";
 import { abi } from "../utils/abi";
 import { contractAddress } from "../utils/contractAddress";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAccount, useWriteContract } from "wagmi";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
 import { useGameContext } from "../contexts/GameContext";
-
-import type { MoveResultEvent } from "../types/eventTypes";
+import type { MoveResultEvent} from "../types/eventTypes";
 import type { Coordinate } from "../types/coordinate";
+import { Loader } from "@mantine/core";
 
 const EnemyTerritory = () => {
+  const account = useAccount();
+
   const {
     grid,
     setGrid,
     setMoveMessage,
     turnMessage,
     setTurnMessage,
+    shipPlacementPlayer,
+    bothPlayersPlacedShips,
+    setErrorMessage,
   } = useGameContext();
 
-  const account = useAccount();
   const { writeContract } = useWriteContract();
 
+  const timeoutRef = useRef<number | null>(null);
+  
+  const [loadingCell, setLoadingCell] = useState<{ row: number; col: number } | null>(null);
   const [enemyGrid, setEnemyGrid] = useState<GridData>([
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -44,6 +51,12 @@ const EnemyTerritory = () => {
       const coordinate = intToCoordinate(data.pos);
       let updatedMoveMessage = "";
       let updatedTurnMessage = "";
+
+      // Clear loading cell and timer
+      if (timeoutRef.current != null) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null;
+      }
 
       if (data.player === account.address) {
         // Our move: update enemy grid.
@@ -72,6 +85,7 @@ const EnemyTerritory = () => {
         localStorage.setItem("grid", JSON.stringify(grid));
       }
 
+      if (timeoutRef.current) { clearTimeout(timeoutRef.current) }
       setMoveMessage(updatedMoveMessage);
       setTurnMessage(updatedTurnMessage);
 
@@ -115,8 +129,37 @@ const EnemyTerritory = () => {
   const intToCoordinate = (value: number): Coordinate => {
     const x = Math.floor(value / 10);
     const y = value % 10;
-    return { x, y };
+    return { x, y }
+  }
+
+  const handleMoveTransaction = (rowIndex: number, colIndex: number) => {
+    setLoadingCell({ row: rowIndex, col: colIndex });
+
+    if (timeoutRef.current) { clearTimeout(timeoutRef.current) }
+
+    timeoutRef.current = window.setTimeout(() => {
+      setLoadingCell(null);
+      setErrorMessage("Transaction timed out. Please try again.")
+    }, 60000)
+
+    try {
+      writeContract({
+        address: contractAddress,
+        abi,
+        functionName: 'move',
+        args: [rowIndex, colIndex],
+      })
+    } catch (error) {
+      console.error('Transaction failed:', error);
+    }
   };
+
+  useEffect(() => {
+    if (loadingCell) {
+      setLoadingCell(null);
+    }
+  }, [turnMessage])
+
 
   const colorByState = (cell: number) => {
     switch (cell) {
@@ -134,41 +177,53 @@ const EnemyTerritory = () => {
   };
 
   return (
-    <div
-      className={`flex items-center justify-center ${
-        turnMessage === "Your turn"
-          ? "pointer-events-auto opacity-100"
-          : "pointer-events-none opacity-50"
-      }`}
-    >
-      <div className="grid grid-cols-10 gap-0.5 bg-[#1212ab] p-0.5">
-        {enemyGrid.map((row, rowIndex) =>
-          row.map((cell, colIndex) => (
-            <button
-              key={`${row}-${colIndex}`}
-              disabled={cell === 2 || cell === 3}
-              className={`flex items-center justify-center border border-black w-10 h-10 ${colorByState(cell)} ${cell !== 2 && cell !== 3 && "cursor-pointer hover:bg-slate-700"}`}
-              type="button"
-              onClick={() =>
-                writeContract({
-                  abi,
-                  address: contractAddress,
-                  functionName: "move",
-                  args: [rowIndex, colIndex],
-                })
-              }
-            >
-              {cell === 2 || cell === 3 ? (
-                <span className="text-black font-bold text-3xl h-full">
-                  x
-                </span>
-              ) : (
-                <span>Fire</span>
+    <div>
+      {!bothPlayersPlacedShips ? (
+        <div>
+          {shipPlacementPlayer === account.address && (
+            <h2>Waiting for opponent to place their ships...</h2>
+          )}
+        </div>
+      ) : (
+        <div>
+          <div
+            className={`flex items-center justify-center ${turnMessage === "Your turn"
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-50"
+              }`}
+          >
+            <div className="grid grid-cols-10 gap-0.5 bg-[#1212ab] p-0.5">
+              {enemyGrid.map((row, rowIndex) =>
+                row.map((cell, colIndex) => (
+                    <button
+                      key={`${row}-${colIndex}`}
+                      disabled={cell === 2 || cell === 3 || loadingCell !== null}
+                      className={`flex items-center justify-center border border-black w-10 h-10 ${colorByState(cell)} ${cell !== 2 && cell !== 3 && "cursor-pointer hover:bg-slate-700"}`}
+                      type="button"
+                      onClick={() =>
+                        handleMoveTransaction(rowIndex, colIndex)
+                      }
+                    >
+                      {loadingCell &&
+                        loadingCell.row === rowIndex &&
+                        loadingCell.col === colIndex ? (
+                        <Loader size="md" />
+                      ) : (
+                        cell === 2 || cell === 3 ? (
+                          <span className="text-black font-bold text-3xl h-full">
+                            x
+                          </span>
+                        ) : (
+                          <span>Fire</span>
+                        )
+                      )}
+                    </button>
+                ))
               )}
-            </button>
-          ))
-        )}
-      </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

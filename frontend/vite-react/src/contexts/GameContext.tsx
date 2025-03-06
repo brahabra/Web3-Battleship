@@ -9,6 +9,12 @@ interface GameContextType {
   setGrid: React.Dispatch<React.SetStateAction<GridData>>;
   firstPlayerJoined: string;
   setFirstPlayerJoined: React.Dispatch<React.SetStateAction<string>>;
+  secondPlayerJoined: string;
+  setSecondPlayerJoined: React.Dispatch<React.SetStateAction<string>>;
+  gameStarted: boolean;
+  setGameStarted: React.Dispatch<React.SetStateAction<boolean>>;
+  showGameUnderway: boolean;
+  setShowGameUnderway: React.Dispatch<React.SetStateAction<boolean>>;
   shipPlacementPlayer: string;
   setShipPlacementPlayer: React.Dispatch<React.SetStateAction<string>>;
   bothPlayersPlacedShips: boolean;
@@ -17,6 +23,10 @@ interface GameContextType {
   setMoveMessage: React.Dispatch<React.SetStateAction<string>>;
   turnMessage: string;
   setTurnMessage: React.Dispatch<React.SetStateAction<string>>;
+  errorMessage: string
+  setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
+  gameReset: boolean;
+  setGameReset: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // Create the context with a default value (which will be overridden by the provider).
@@ -38,10 +48,15 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
   const [firstPlayerJoined, setFirstPlayerJoined] = useState<string>("");
+  const [secondPlayerJoined, setSecondPlayerJoined] = useState<string>("");
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
+  const [showGameUnderway, setShowGameUnderway] = useState(false);
   const [shipPlacementPlayer, setShipPlacementPlayer] = useState<string>("");
   const [bothPlayersPlacedShips, setBothPlayersPlacedShips] = useState<boolean>(false);
   const [moveMessage, setMoveMessage] = useState<string>("");
   const [turnMessage, setTurnMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [gameReset, setGameReset] = useState<boolean>(false);
 
   // Provide all state values and setters.
   return (
@@ -51,6 +66,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setGrid,
         firstPlayerJoined,
         setFirstPlayerJoined,
+        secondPlayerJoined,
+        setSecondPlayerJoined,
+        gameStarted,
+        setGameStarted,
+        showGameUnderway,
+        setShowGameUnderway,
         shipPlacementPlayer,
         setShipPlacementPlayer,
         bothPlayersPlacedShips,
@@ -59,6 +80,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         turnMessage,
         setMoveMessage,
         setTurnMessage,
+        errorMessage,
+        setErrorMessage,
+        gameReset,
+        setGameReset,
       }}
     >
       {children}
