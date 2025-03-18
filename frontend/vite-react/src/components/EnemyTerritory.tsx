@@ -1,105 +1,32 @@
-import type { GridData } from "../types/gridTypes";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
 import { useGameContext } from "../contexts/GameContext";
-import type { MoveResultEvent} from "../types/eventTypes";
-import type { Coordinate } from "../types/coordinate";
 import { Loader } from "@mantine/core";
 import useGameWriteContract from "../hooks/useGameWriteContract";
+import { useMoveResultListener } from "../hooks/useMoveResultListener";
 
 const EnemyTerritory = () => {
   const account = useAccount();
 
+  useMoveResultListener();
+
   const {
-    grid,
     setGrid,
+    enemyGrid,
+    setEnemyGrid,
     setMoveMessage,
     turnMessage,
     setTurnMessage,
     shipPlacementPlayer,
     bothPlayersPlacedShips,
     setErrorMessage,
+    moveResultTimeoutRef,
     transactionCancelCount
   } = useGameContext();
 
   const executeWriteContract = useGameWriteContract();
-
-  const timeoutRef = useRef<number | null>(null);
   
   const [loadingCell, setLoadingCell] = useState<{ row: number; col: number } | null>(null);
-  const [enemyGrid, setEnemyGrid] = useState<GridData>([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
-
-  useWatchContractEventListener({
-    eventName: "MoveResult",
-    onEvent: (logs: MoveResultEvent[]) => {
-      const data = logs[0].args;
-      if (typeof data.pos !== "number") {
-        throw new Error("data.pos is undefined");
-      }
-      const coordinate = intToCoordinate(data.pos);
-      let updatedMoveMessage = "";
-      let updatedTurnMessage = "";
-
-      // Clear loading cell and timer
-      if (timeoutRef.current != null) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null;
-      }
-
-      if (data.player === account.address) {
-        // Our move: update enemy grid.
-        if (data.hit) {
-          enemyGrid[coordinate.x][coordinate.y] = 3;
-          updatedMoveMessage = data.gameOver ? "You won the game!" : "You shot and hit!";
-        } else {
-          enemyGrid[coordinate.x][coordinate.y] = 2;
-          updatedMoveMessage = "You shot and missed!";
-        }
-        // If the game is over, no next turn.
-        updatedTurnMessage = data.gameOver ? "" : "Opponent's turn";
-        setEnemyGrid(enemyGrid);
-        localStorage.setItem("enemyGrid", JSON.stringify(enemyGrid));
-      } else {
-        // Opponent's move: update our grid.
-        if (data.hit) {
-          grid[coordinate.x][coordinate.y] = 3;
-          updatedMoveMessage = data.gameOver ? "You lost the game!" : "Opponent shot and hit!";
-        } else {
-          grid[coordinate.x][coordinate.y] = 2;
-          updatedMoveMessage = "Opponent shot and missed!";
-        }
-        updatedTurnMessage = data.gameOver ? "" : "Your turn";
-        setGrid(grid);
-        localStorage.setItem("grid", JSON.stringify(grid));
-      }
-
-      if (timeoutRef.current) { clearTimeout(timeoutRef.current) }
-      setMoveMessage(updatedMoveMessage);
-      setTurnMessage(updatedTurnMessage);
-
-      localStorage.setItem("moveMessage", JSON.stringify(updatedMoveMessage));
-      localStorage.setItem("turnMessage", JSON.stringify(updatedTurnMessage));
-
-      // If the game is over, reset the game after 5 seconds
-      if (data.gameOver) {
-        setTimeout(() => {
-          executeWriteContract({ functionName: "resetGame" });
-        }, 5000);
-      }
-    },
-  });
 
   // On component mount, load saved event values from localStorage.
   useEffect(() => {
@@ -123,24 +50,18 @@ const EnemyTerritory = () => {
 
   useEffect(() => {
     setLoadingCell(null);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null
+    if (moveResultTimeoutRef.current) {
+      clearTimeout(moveResultTimeoutRef.current);
+      moveResultTimeoutRef.current = null
     }
   },[transactionCancelCount])
-
-  const intToCoordinate = (value: number): Coordinate => {
-    const x = Math.floor(value / 10);
-    const y = value % 10;
-    return { x, y }
-  }
 
   const handleMoveTransaction = (rowIndex: number, colIndex: number) => {
     setLoadingCell({ row: rowIndex, col: colIndex });
 
-    if (timeoutRef.current) { clearTimeout(timeoutRef.current) }
+    if (moveResultTimeoutRef.current) { clearTimeout(moveResultTimeoutRef.current) }
 
-    timeoutRef.current = window.setTimeout(() => {
+    moveResultTimeoutRef.current = window.setTimeout(() => {
       setLoadingCell(null);
       setErrorMessage("Transaction timed out. Please try again.")
     }, 60000)
@@ -157,7 +78,6 @@ const EnemyTerritory = () => {
       setLoadingCell(null);
     }
   }, [turnMessage])
-
 
   const colorByState = (cell: number) => {
     switch (cell) {

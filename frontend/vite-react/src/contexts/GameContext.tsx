@@ -1,12 +1,24 @@
 // src/contexts/GameContext.tsx
 import type React from "react";
-import { createContext, useContext, useState, type ReactNode } from "react"
+import { createContext, useContext, useRef, useState, type ReactNode } from "react"
 import type { GridData } from "../types/gridTypes";
 
 // Define the shape of our game context.
 interface GameContextType {
   grid: GridData;
   setGrid: React.Dispatch<React.SetStateAction<GridData>>;
+  tempGrid: GridData;
+  setTempGrid: React.Dispatch<React.SetStateAction<GridData>>;
+  enemyGrid: GridData;
+  setEnemyGrid: React.Dispatch<React.SetStateAction<GridData>>;
+  placedShips: boolean[];
+  setPlacedShips: React.Dispatch<React.SetStateAction<boolean[]>>;
+  shipPositions: number[];
+  setShipPositions: React.Dispatch<React.SetStateAction<number[]>>;
+  isDragging: boolean;
+  setIsDragging: React.Dispatch<React.SetStateAction<boolean>>;
+  shipOrientations: boolean[];
+  setShipsOrientations: React.Dispatch<React.SetStateAction<boolean[]>>;
   firstPlayerJoined: string;
   setFirstPlayerJoined: React.Dispatch<React.SetStateAction<string>>;
   secondPlayerJoined: string;
@@ -27,6 +39,7 @@ interface GameContextType {
   setErrorMessage: React.Dispatch<React.SetStateAction<string>>;
   gameReset: boolean;
   setGameReset: React.Dispatch<React.SetStateAction<boolean>>;
+  moveResultTimeoutRef: React.MutableRefObject<number | null>;
   autoConfirmTransactions: boolean;
   setAutoConfirmTransactions: React.Dispatch<React.SetStateAction<boolean>>;
   transactionCancelCount: number;
@@ -51,6 +64,47 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
+  const [tempGrid, setTempGrid] = useState<GridData>([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+  const [enemyGrid, setEnemyGrid] = useState<GridData>([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+  const [placedShips, setPlacedShips] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  const [shipPositions, setShipPositions] = useState<number[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [shipOrientations, setShipsOrientations] = useState<boolean[]>([
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+
   const [firstPlayerJoined, setFirstPlayerJoined] = useState<string>("");
   const [secondPlayerJoined, setSecondPlayerJoined] = useState<string>("");
   const [gameStarted, setGameStarted] = useState<boolean>(false);
@@ -61,6 +115,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const [turnMessage, setTurnMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [gameReset, setGameReset] = useState<boolean>(false);
+  
+  const moveResultTimeoutRef = useRef<number | null>(null);
   const [autoConfirmTransactions, setAutoConfirmTransactions] = useState<boolean>(false);
   const [transactionCancelCount, setTransactionCancelCount] = useState<number>(0)
 
@@ -71,6 +127,18 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       value={{
         grid,
         setGrid,
+        tempGrid,
+        setTempGrid,
+        enemyGrid,
+        setEnemyGrid,
+        placedShips,
+        setPlacedShips,
+        shipPositions,
+        setShipPositions,
+        isDragging,
+        setIsDragging,
+        shipOrientations,
+        setShipsOrientations,
         firstPlayerJoined,
         setFirstPlayerJoined,
         secondPlayerJoined,
@@ -91,6 +159,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setErrorMessage,
         gameReset,
         setGameReset,
+        moveResultTimeoutRef,
         autoConfirmTransactions,
         setAutoConfirmTransactions,
         transactionCancelCount,

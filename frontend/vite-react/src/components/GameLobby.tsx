@@ -10,7 +10,7 @@ import useGameWriteContract from "../hooks/useGameWriteContract";
 const GameLobby = () => {
   const account = useAccount();
 
-  const { setErrorMessage, firstPlayerJoined, setFirstPlayerJoined, secondPlayerJoined, setSecondPlayerJoined, setGameStarted, setShowGameUnderway, transactionCancelCount, setTransactionCancelCount } = useGameContext();
+  const { setErrorMessage, firstPlayerJoined, setFirstPlayerJoined, secondPlayerJoined, setSecondPlayerJoined, setGameStarted, setShowGameUnderway, transactionCancelCount } = useGameContext();
   
   const executeWriteContract = useGameWriteContract();
 
