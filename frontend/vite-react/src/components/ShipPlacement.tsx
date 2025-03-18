@@ -18,7 +18,7 @@ import useGameWriteContract from "../hooks/useGameWriteContract";
 const ShipPlacement = () => {
   const account = useAccount();
 
-  const { firstPlayerJoined, grid, setGrid, setShipPlacementPlayer, setBothPlayersPlacedShips, setTurnMessage, setErrorMessage } = useGameContext();
+  const { firstPlayerJoined, grid, setGrid, setShipPlacementPlayer, setBothPlayersPlacedShips, setTurnMessage, setErrorMessage, transactionCancelCount } = useGameContext();
   
   const executeWriteContract = useGameWriteContract();
 
@@ -69,6 +69,14 @@ const ShipPlacement = () => {
     }, 60000); // 60sec timeout if no transaction is validated
     executeWriteContract({ functionName: "placeShips", args: [shipPositions] });
   }
+
+  useEffect(() => {
+    setIsLoading(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null
+    }
+  },[transactionCancelCount])
 
   useWatchContractEventListener({
     eventName: "ShipPlacement",
