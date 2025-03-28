@@ -16,6 +16,16 @@ export const useMoveResultListener = () => {
     setMoveMessage,
     setTurnMessage,
     moveResultTimeoutRef,
+    timesHit,
+    setTimesHit,
+    timesMiss,
+    setTimesMiss,
+    enemyTimesHit,
+    setEnemyTimesHit,
+    enemyTimesMiss,
+    setEnemyTimesMiss,
+    turnNumber,
+    setTurnNumber
   } = useGameContext();
 
   const executeWriteContract = useGameWriteContract();
@@ -41,9 +51,11 @@ export const useMoveResultListener = () => {
           // Our move: update enemy grid.
           if (data.hit) {
             enemyGrid[coordinate.x][coordinate.y] = 3;
+            setTimesHit(timesHit+1)
             updatedMoveMessage = data.gameOver ? "You won the game!" : "You shot and hit!";
           } else {
             enemyGrid[coordinate.x][coordinate.y] = 2;
+            setTimesMiss(timesMiss+1)
             updatedMoveMessage = "You shot and missed!";
           }
           // If the game is over, no next turn.
@@ -54,9 +66,11 @@ export const useMoveResultListener = () => {
           // Opponent's move: update our grid.
           if (data.hit) {
             grid[coordinate.x][coordinate.y] = 3;
+            setEnemyTimesHit(enemyTimesHit+1)
             updatedMoveMessage = data.gameOver ? "You lost the game!" : "Opponent shot and hit!";
           } else {
             grid[coordinate.x][coordinate.y] = 2;
+            setEnemyTimesMiss(enemyTimesMiss+1)
             updatedMoveMessage = "Opponent shot and missed!";
           }
           updatedTurnMessage = data.gameOver ? "" : "Your turn";
@@ -67,7 +81,7 @@ export const useMoveResultListener = () => {
         if (moveResultTimeoutRef.current) { clearTimeout(moveResultTimeoutRef.current) }
         setMoveMessage(updatedMoveMessage);
         setTurnMessage(updatedTurnMessage);
-  
+        setTurnNumber(turnNumber+1)
         localStorage.setItem("moveMessage", JSON.stringify(updatedMoveMessage));
         localStorage.setItem("turnMessage", JSON.stringify(updatedTurnMessage));
   

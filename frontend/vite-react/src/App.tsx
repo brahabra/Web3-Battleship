@@ -7,6 +7,7 @@ import ShipPlacement from "./components/ShipPlacement";
 import EnemyTerritory from "./components/EnemyTerritory";
 import TransactionConfirmationModal from "./components/TransactionConfirmationModal";
 import { useGameContext } from "./contexts/GameContext";
+import GameStatsBox from "./components/GameStatsBox";
 import Footer from "./components/Footer";
 
 function App() {
@@ -50,10 +51,13 @@ function App() {
               >
                 {moveMessage}
               </h2>
+
               <div className="flex">
+                {bothPlayersPlacedShips && <GameStatsBox/>}
                 {gameStarted && <ShipPlacement />}
                 {bothPlayersPlacedShips && <EnemyTerritory />}
               </div>
+
               {!bothPlayersPlacedShips && (
                 <div className="flex justify-center font-bold text-2xl py-6">
                   {shipPlacementPlayer && (
