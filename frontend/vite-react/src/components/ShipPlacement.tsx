@@ -1,6 +1,4 @@
-import {
-  DndContext,
-} from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
 import Ship from "./ship";
 import DroppableGridCell from "./DroppableGridCell";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +6,10 @@ import { Button, Loader } from "@mantine/core";
 import { useAccount } from "wagmi";
 import { useGameContext } from "../contexts/GameContext";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
-import type { BothPlayersPlacedShipsEvent, ShipPlacementEvent } from "../types/eventTypes";
+import type {
+  BothPlayersPlacedShipsEvent,
+  ShipPlacementEvent,
+} from "../types/eventTypes";
 import useGameWriteContract from "../hooks/useGameWriteContract";
 import { useShipDragEnd } from "../hooks/useShipDragEnd";
 import { useShipDragOver } from "../hooks/useShipDragOver";
@@ -17,8 +18,27 @@ import PlacementHelpIcon from "./PlacementHelpIcon";
 const ShipPlacement = () => {
   const account = useAccount();
 
-  const { grid, tempGrid, placedShips, setPlacedShips, shipPositions, isDragging, setIsDragging, shipOrientations, setShipsOrientations, firstPlayerJoined, setShipPlacementPlayer, setBothPlayersPlacedShips, setTurnMessage, setErrorMessage, transactionCancelCount } = useGameContext();
-  
+  const {
+    grid,
+    setGrid,
+    tempGrid,
+    setTempGrid,
+    placedShips,
+    setPlacedShips,
+    shipPositions,
+    setShipPositions,
+    isDragging,
+    setIsDragging,
+    shipOrientations,
+    setShipsOrientations,
+    firstPlayerJoined,
+    setShipPlacementPlayer,
+    setBothPlayersPlacedShips,
+    setTurnMessage,
+    setErrorMessage,
+    transactionCancelCount,
+  } = useGameContext();
+
   const executeWriteContract = useGameWriteContract();
   const { handleDragEnd } = useShipDragEnd();
   const { handleDragOver } = useShipDragOver();
@@ -27,24 +47,24 @@ const ShipPlacement = () => {
 
   const [shipsSubmitted, setShipsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   const handleSubmitShips = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     timeoutRef.current = window.setTimeout(() => {
-      setIsLoading(false)
+      setIsLoading(false);
       timeoutRef.current = null;
-      setErrorMessage("Failed to submit ships. Please try again")
+      setErrorMessage("Failed to submit ships. Please try again");
     }, 60000); // 60sec timeout if no transaction is validated
     executeWriteContract({ functionName: "placeShips", args: [shipPositions] });
-  }
+  };
 
   useEffect(() => {
     setIsLoading(false);
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
-      timeoutRef.current = null
+      timeoutRef.current = null;
     }
-  },[transactionCancelCount])
+  }, [transactionCancelCount]);
 
   useWatchContractEventListener({
     eventName: "ShipPlacement",
@@ -56,7 +76,7 @@ const ShipPlacement = () => {
       if (logs[0].args.player === account.address) {
         setIsLoading(false);
         if (timeoutRef.current != null) {
-          clearTimeout(timeoutRef.current)
+          clearTimeout(timeoutRef.current);
           timeoutRef.current = null;
         }
       }
@@ -66,7 +86,10 @@ const ShipPlacement = () => {
         localStorage.setItem("grid", JSON.stringify(grid));
         setShipsSubmitted(true);
         localStorage.setItem("shipsSubmitted", JSON.stringify(true));
-        localStorage.setItem("placedShips", JSON.stringify([true, true, true, true, true]));
+        localStorage.setItem(
+          "placedShips",
+          JSON.stringify([true, true, true, true, true])
+        );
         localStorage.setItem("shipPositions", JSON.stringify(shipPositions));
       }
     },
@@ -91,7 +114,9 @@ const ShipPlacement = () => {
   });
 
   useEffect(() => {
-    const storedShipPlacementPlayer = localStorage.getItem("shipPlacementPlayer");
+    const storedShipPlacementPlayer = localStorage.getItem(
+      "shipPlacementPlayer"
+    );
     if (storedShipPlacementPlayer) {
       setShipPlacementPlayer(JSON.parse(storedShipPlacementPlayer));
     }
@@ -103,7 +128,9 @@ const ShipPlacement = () => {
     if (storedPlacedShips) {
       setPlacedShips(JSON.parse(storedPlacedShips));
     }
-    const storedBothPlayersPlacedShips = localStorage.getItem("bothPlayersPlacedShips");
+    const storedBothPlayersPlacedShips = localStorage.getItem(
+      "bothPlayersPlacedShips"
+    );
     if (storedBothPlayersPlacedShips) {
       setBothPlayersPlacedShips(JSON.parse(storedBothPlayersPlacedShips));
     }
@@ -121,6 +148,37 @@ const ShipPlacement = () => {
 
   const handleDragStart = () => {
     setIsDragging(true);
+  };
+
+  const regretShipPlacement = () => {
+    //Reset data
+    setPlacedShips([false, false, false, false, false]);
+    setShipPositions([]);
+    setShipsOrientations([false, false, false, false, false]);
+    setGrid([
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
+    setTempGrid([
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
   };
 
   const lengthByIDShipRendering = (id: number) => {
@@ -169,11 +227,11 @@ const ShipPlacement = () => {
           </div>
           <div className="flex flex-col p-5 mb-21">
             <div className="mb-10">
-              {!placedShips.every(Boolean) &&
+              {!placedShips.every(Boolean) && (
                 <div className="flex justify-center">
                   <PlacementHelpIcon />
                 </div>
-              }
+              )}
             </div>
             <div>
               {[0, 1, 2, 3, 4].map((id) =>
@@ -187,9 +245,13 @@ const ShipPlacement = () => {
                 ) : null
               )}
             </div>
+            {placedShips.some((isPlaced) => isPlaced) && !shipsSubmitted && (
+              <Button color="orange" onClick={regretShipPlacement}>Reset ships</Button>
+            )}
           </div>
         </div>
       </DndContext>
+
       {placedShips.every(Boolean) && !shipsSubmitted && (
         <div className="flex justify-center mt-5">
           {isLoading ? (
@@ -205,18 +267,14 @@ const ShipPlacement = () => {
               <Loader />
             </Button>
           ) : (
-            <Button
-              size="lg"
-              radius="lg"
-              onClick={handleSubmitShips}
-            >
+            <Button size="lg" radius="lg" onClick={handleSubmitShips}>
               Submit Ships
             </Button>
           )}
         </div>
-    )}
-  </div>
-  )
+      )}
+    </div>
+  );
 };
 
 export default ShipPlacement;
