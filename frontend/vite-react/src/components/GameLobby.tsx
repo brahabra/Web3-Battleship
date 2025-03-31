@@ -94,21 +94,9 @@ const GameLobby = () => {
   }, [secondPlayerJoined]);
 
   useEffect(() => {
-    const storedGameStarted = localStorage.getItem("gameStarted");
-    if (storedGameStarted) {
-      setGameStarted(JSON.parse(storedGameStarted));
-    }
-    const storedFirstPlayerJoined = localStorage.getItem("firstPlayerJoined");
-    if (storedFirstPlayerJoined) {
-      setFirstPlayerJoined(JSON.parse(storedFirstPlayerJoined));
-    }
-    const storedSecondPlayerJoined = localStorage.getItem("secondPlayerJoined");
-    if (storedSecondPlayerJoined) {
-      setSecondPlayerJoined(JSON.parse(storedSecondPlayerJoined));
-    }
-    const storedShowGameUnderway = localStorage.getItem("showGameUnderway");
-    if (storedShowGameUnderway) {
-      setShowGameUnderway(JSON.parse(storedShowGameUnderway));
+    const savedFirstPlayerJoined = localStorage.getItem("firstPlayerJoined");
+    if (savedFirstPlayerJoined) {
+      setFirstPlayerJoined(JSON.parse(savedFirstPlayerJoined));
     }
   }, []);
 

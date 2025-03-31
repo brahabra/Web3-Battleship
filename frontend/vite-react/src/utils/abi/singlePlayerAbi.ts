@@ -1,4 +1,4 @@
-export const abi = [
+export const singlePlayerAbi = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -6,64 +6,13 @@ export const abi = [
   },
   {
     "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "placed",
-        "type": "bool"
-      }
-    ],
-    "name": "BothPlayersPlacedShips",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      }
-    ],
-    "name": "FirstPlayerJoined",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newGameId",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "GameReset",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
       {
         "indexed": true,
         "internalType": "address",
@@ -87,6 +36,12 @@ export const abi = [
         "internalType": "bool",
         "name": "gameOver",
         "type": "bool"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "isPlayerMove",
+        "type": "bool"
       }
     ],
     "name": "MoveResult",
@@ -96,30 +51,18 @@ export const abi = [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
         "indexed": true,
         "internalType": "address",
         "name": "player",
         "type": "address"
       }
     ],
-    "name": "SecondPlayerJoined",
+    "name": "PlayerJoined",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
       {
         "indexed": true,
         "internalType": "address",
@@ -132,7 +75,40 @@ export const abi = [
   },
   {
     "inputs": [],
-    "name": "gameId",
+    "name": "aiMove",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "aiMoves",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "aiRemainingCells",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "aiShips",
     "outputs": [
       {
         "internalType": "uint256",
@@ -154,13 +130,6 @@ export const abi = [
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "join",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -196,7 +165,7 @@ export const abi = [
   },
   {
     "inputs": [],
-    "name": "player1",
+    "name": "player",
     "outputs": [
       {
         "internalType": "address",
@@ -209,12 +178,38 @@ export const abi = [
   },
   {
     "inputs": [],
-    "name": "player2",
+    "name": "playerRemainingCells",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "uint8",
         "name": "",
-        "type": "address"
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerShips",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "playerShipsPlaced",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -223,6 +218,13 @@ export const abi = [
   {
     "inputs": [],
     "name": "resetGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "startGame",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

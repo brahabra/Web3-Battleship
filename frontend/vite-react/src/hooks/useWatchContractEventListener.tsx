@@ -1,15 +1,21 @@
 import { useWatchContractEvent } from "wagmi";
-import { contractAddress } from "../utils/contractAddress";
-import { abi } from "../utils/abi";
+import { multiplayerContractAddress, singlePlayerContractAddress } from "../utils/contractAddress";
+import { multiplayerAbi } from "../utils/abi/multiplayerAbi";
+import type { GameMode } from "../types/gameTypes";
+import { singlePlayerAbi } from "../utils/abi/singlePlayerAbi";
 
 interface WatchEventParams {
   eventName: "FirstPlayerJoined" | "SecondPlayerJoined" | "ShipPlacement" | "BothPlayersPlacedShips" | "MoveResult" | "GameReset";
   onEvent: (logs: any[]) => void;
+  mode?: GameMode;
 }
 
-const useWatchContractEventListener = ({ eventName, onEvent }: WatchEventParams) => {
+const useWatchContractEventListener = ({ eventName, onEvent, mode }: WatchEventParams) => {
+  const abi = mode === "singleplayer" ? singlePlayerAbi : multiplayerAbi;
+  const address = mode === "singleplayer" ? singlePlayerContractAddress : multiplayerContractAddress;
+  
   useWatchContractEvent({
-    address: contractAddress,
+    address,
     abi,
     eventName,
     onLogs(logs) {

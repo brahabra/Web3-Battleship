@@ -8,12 +8,9 @@ import { useMoveResultListener } from "../hooks/useMoveResultListener";
 const EnemyTerritory = () => {
   const account = useAccount();
 
-  useMoveResultListener();
-
   const {
-    setGrid,
     enemyGrid,
-    setEnemyGrid,
+    mode,
     setMoveMessage,
     turnMessage,
     setTurnMessage,
@@ -23,6 +20,8 @@ const EnemyTerritory = () => {
     moveResultTimeoutRef,
     transactionCancelCount
   } = useGameContext();
+
+  useMoveResultListener(mode);
 
   const executeWriteContract = useGameWriteContract();
   
@@ -37,14 +36,6 @@ const EnemyTerritory = () => {
     const savedTurnMessage = localStorage.getItem("turnMessage");
     if (savedTurnMessage) {
       setTurnMessage(JSON.parse(savedTurnMessage));
-    }
-    const savedEnemyGrid = localStorage.getItem("enemyGrid");
-    if (savedEnemyGrid) {
-      setEnemyGrid(JSON.parse(savedEnemyGrid));
-    }
-    const savedGrid = localStorage.getItem("grid");
-    if (savedGrid) {
-      setGrid(JSON.parse(savedGrid));
     }
   }, []);
 
@@ -67,7 +58,14 @@ const EnemyTerritory = () => {
     }, 60000)
 
     try {
-      executeWriteContract({ functionName: "move", args: [rowIndex, colIndex] });
+      if (mode === "singleplayer") {
+        executeWriteContract({ functionName: "move", args: [rowIndex, colIndex], mode });
+        setTimeout(() => {
+          executeWriteContract({ functionName: "aiMove", mode });
+        }, 10000);
+      } else {
+        executeWriteContract({ functionName: "move", args: [rowIndex, colIndex], mode });
+      }
     } catch (error) {
       console.error('Transaction failed:', error);
     }
@@ -96,7 +94,7 @@ const EnemyTerritory = () => {
 
   return (
     <div>
-      {!bothPlayersPlacedShips ? (
+      {!bothPlayersPlacedShips && mode !== "singleplayer" ? (
         <div>
           {shipPlacementPlayer === account.address && (
             <h2>Waiting for opponent to place their ships...</h2>

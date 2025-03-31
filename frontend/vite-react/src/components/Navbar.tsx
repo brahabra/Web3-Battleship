@@ -7,14 +7,15 @@ const Navbar = () => {
   const account = useAccount();
   const { disconnect } = useDisconnect();
 
-  const { setAutoConfirmTransactions, autoConfirmTransactions } = useGameContext();
+  const { autoConfirmTransactions, setAutoConfirmTransactions } =
+    useGameContext();
 
   return (
     <div className="pt-4 pb-12 flex justify-between w-full">
       <h2 className="font-bold text-2xl ml-3">Web3 Battleship</h2>
       {account.status === "connected" && (
         <div className="flex">
-          {account.connector.id !== "privateKey" &&
+          {account.connector.id !== "privateKey" && (
             <Button
               variant="white"
               color="teal"
@@ -26,18 +27,20 @@ const Navbar = () => {
             >
               Disconnect
             </Button>
-          }
-          {account.connector.id === "privateKey" && <>
-            
-            <Switch
-              checked={autoConfirmTransactions}
-              onChange={(event) => setAutoConfirmTransactions(event.currentTarget.checked)}
-              label="Autoconfirm transactions"
-              className="pt-2 pr-2"
-            />
-            <AccountInfoHandle />
-          </>
-          }
+          )}
+          {account.connector.id === "privateKey" && (
+            <>
+              <Switch
+                checked={autoConfirmTransactions}
+                onChange={(event) =>
+                  setAutoConfirmTransactions(event.currentTarget.checked)
+                }
+                label="Autoconfirm transactions"
+                className="pt-2 pr-2"
+              />
+              <AccountInfoHandle />
+            </>
+          )}
         </div>
       )}
     </div>

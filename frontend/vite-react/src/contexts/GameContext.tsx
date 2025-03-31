@@ -5,6 +5,8 @@ import type { GridData } from "../types/gridTypes";
 
 // Define the shape of our game context.
 interface GameContextType {
+  mode: "none" | "singleplayer" | "multiplayer";
+  setMode: React.Dispatch<React.SetStateAction<"none" | "singleplayer" | "multiplayer">>;
   grid: GridData;
   setGrid: React.Dispatch<React.SetStateAction<GridData>>;
   tempGrid: GridData;
@@ -44,6 +46,8 @@ interface GameContextType {
   setAutoConfirmTransactions: React.Dispatch<React.SetStateAction<boolean>>;
   transactionCancelCount: number;
   setTransactionCancelCount: React.Dispatch<React.SetStateAction<number>>;
+  singlePlayerJoined: string;
+  setSinglePlayerJoined: React.Dispatch<React.SetStateAction<string>>;
   timesHit: number;
   setTimesHit: React.Dispatch<React.SetStateAction<number>>;
   timesMiss: number;
@@ -61,19 +65,24 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 
 // Create a provider component.
 export const GameProvider = ({ children }: { children: ReactNode }) => {
+  const [mode, setMode] = useState<"none" | "singleplayer" | "multiplayer">(localStorage.getItem("mode") as "none" | "singleplayer" | "multiplayer" || "none");
+  
   // Initialize state variables
-  const [grid, setGrid] = useState<GridData>([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
+  const [grid, setGrid] = useState<GridData>(() => {
+    const savedGrid = localStorage.getItem("grid");
+    return savedGrid ? JSON.parse(savedGrid) : [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];
+  });
   const [tempGrid, setTempGrid] = useState<GridData>([
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -86,25 +95,25 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
-  const [enemyGrid, setEnemyGrid] = useState<GridData>([
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
-  const [placedShips, setPlacedShips] = useState<boolean[]>([
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
+  const [enemyGrid, setEnemyGrid] = useState<GridData>(() => {
+    const savedEnemyGrid = localStorage.getItem("enemyGrid");
+    return savedEnemyGrid ? JSON.parse(savedEnemyGrid) : [
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    ];  
+  });
+  const [placedShips, setPlacedShips] = useState<boolean[]>(() => {
+    const savedPlacedShips = localStorage.getItem("placedShips");
+    return savedPlacedShips ? JSON.parse(savedPlacedShips) : [false, false, false, false, false];
+  });
   const [shipPositions, setShipPositions] = useState<number[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [shipOrientations, setShipsOrientations] = useState<boolean[]>([
@@ -115,12 +124,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     false,
   ]);
 
-  const [firstPlayerJoined, setFirstPlayerJoined] = useState<string>("");
-  const [secondPlayerJoined, setSecondPlayerJoined] = useState<string>("");
-  const [gameStarted, setGameStarted] = useState<boolean>(false);
-  const [showGameUnderway, setShowGameUnderway] = useState(false);
-  const [shipPlacementPlayer, setShipPlacementPlayer] = useState<string>("");
-  const [bothPlayersPlacedShips, setBothPlayersPlacedShips] = useState<boolean>(false);
+  const [firstPlayerJoined, setFirstPlayerJoined] = useState<string | null>(localStorage.getItem("firstPlayerJoined"));
+  const [secondPlayerJoined, setSecondPlayerJoined] = useState<string | null>(localStorage.getItem("secondPlayerJoined"));
+  const [gameStarted, setGameStarted] = useState<boolean>(localStorage.getItem("gameStarted") === "true");
+  const [showGameUnderway, setShowGameUnderway] = useState<boolean>(localStorage.getItem("showGameUnderway") === "true");
+  const [shipPlacementPlayer, setShipPlacementPlayer] = useState<string | null>(localStorage.getItem("shipPlacementPlayer"));
+  const [bothPlayersPlacedShips, setBothPlayersPlacedShips] = useState<boolean>(localStorage.getItem("bothPlayersPlacedShips") === "true");
   const [moveMessage, setMoveMessage] = useState<string>("");
   const [turnMessage, setTurnMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
@@ -129,6 +138,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const moveResultTimeoutRef = useRef<number | null>(null);
   const [autoConfirmTransactions, setAutoConfirmTransactions] = useState<boolean>(false);
   const [transactionCancelCount, setTransactionCancelCount] = useState<number>(0)
+
+  const [singlePlayerJoined, setSinglePlayerJoined] = useState<string | null>(
+    localStorage.getItem("singlePlayerJoined")
+  );
   const [timesHit, setTimesHit] = useState<number>(0);
   const [timesMiss, setTimesMiss] = useState<number>(0);
   const [enemyTimesHit, setEnemyTimesHit] = useState<number>(0);
@@ -139,6 +152,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   return (
     <GameContext.Provider
       value={{
+        mode,
+        setMode,
         grid,
         setGrid,
         tempGrid,
@@ -178,6 +193,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setAutoConfirmTransactions,
         transactionCancelCount,
         setTransactionCancelCount,
+        singlePlayerJoined,
+        setSinglePlayerJoined,
         timesHit,
         setTimesHit,
         timesMiss,
