@@ -6,7 +6,7 @@ function NewUserInformation() {
         ⛓️What is Web3?⛓️
         </h2>
         <p className="text-lg mb-8 ml-8 leading-relaxed">
-        Web3 is a new paradigm for the internet, emphasizing decentralization and user empowerment.
+        Web3 represents a new vision for the internet, emphasizing decentralization and user empowerment.
         Unlike traditional Web2, where data is controlled by centralized corporations, Web3 uses blockchain-based networks of independent nodes to validate and store transactions.
         This ensures transparency, security, and gives users greater control over their data, identity, and online interactions.
         </p>
@@ -15,7 +15,7 @@ function NewUserInformation() {
         🔐Login using Vipps vs Metamask🔐 
         </h2>
         <p className="text-lg mb-6 ml-8 leading-relaxed">
-        In Web3, users interact through wallets that manage identity and access using cryptographic keys — not by storing assets. Each account has a public key for transactions and a private key that proves ownership.
+        In Web3, users interact through wallets that manage identity and access using cryptographic keys - not by storing assets. Each account has a public key for transactions and a private key that proves ownership.
         If the private key is lost, access to the account is gone permanently. To make onboarding easier, we offer Vipps Login as a familiar alternative to wallets like MetaMask, helping newcomers get started while still supporting full control for experienced users.
         </p>
         
@@ -33,7 +33,7 @@ function NewUserInformation() {
         </h2>
         <p className="text-lg mb-8 ml-8 leading-relaxed">
           <span className="font-bold">No!</span> Using Vipps or MetaMask won’t cost you anything.
-          This game runs on Sepolia, an Ethereum test network where the ETH is fake and has no real value. It’s a safe space to explore blockchain features without spending real money — so you can play freely, risk-free.          
+          This game runs on Sepolia, an Ethereum test network where the ETH is fake and has no real value. It’s a safe space to explore blockchain features without spending real money - so you can play freely, risk-free.          
         </p>
         
         <h2 className="text-2xl font-bold mb-4">
