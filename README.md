@@ -1,6 +1,19 @@
 # 🛳️ Web3 Battleship with Vipps SSO
 A Web3-enabled Battleship game that explores how Single Sign-On (SSO) using Vipps can lower the entry barrier for new users in the decentralized ecosystem. Built as part of a master thesis on user onboarding and trusted identity in Web3.
 
+## 🔐 Web3 Onboarding with Vipps SSO
+To reduce onboarding friction, this project integrates **Vipps SSO** to allow users to sign in using a familiar Web2 login method — no wallet setup or private key management required. Here's how it works:
+
+1. The user logs in using Vipps through an OAuth 2.0 authentication flow.
+
+2. We retrieve the user's unique sub identifier from Vipps, which acts as their identity reference.
+
+3. We check if this user already has a private key stored in our database.
+
+4. If not, we generate a new **Ethereum-compatible private key**, store it in our MongoDB database, and return it to the frontend.
+
+This private key enables users to sign blockchain transactions without requiring them to manually interact with a wallet. While simplified, this architecture functions similarly to a lightweight **Wallet-as-a-Service (WaaS)** solution, helping onboard users into Web3 without requiring them to manage keys or install tools like MetaMask.
+
 ## 📦 How to Run the Project
 ### 🚀 Frontend
 1. `cd frontend/vite-react`
