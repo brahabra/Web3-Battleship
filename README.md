@@ -30,7 +30,7 @@ This private key enables users to sign blockchain transactions without requiring
 3. `npm run dev`
 
 ## How to Login with Vipps
-If you are unsure follow this guide ...
+If you are unsure follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#app-installation)
 
 1. Download the Vipps test app (insert link)
 2. 
