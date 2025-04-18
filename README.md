@@ -29,6 +29,14 @@ This private key enables users to sign blockchain transactions without requiring
 
 3. `npm run dev`
 
+## How to Login with Vipps
+If you are unsure follow this guide ...
+
+1. Download the Vipps test app (insert link)
+2. 
+3. ...
+4. ...
+
 ## 🧱 Tech Stack
 
 ### 🖥 Frontend
