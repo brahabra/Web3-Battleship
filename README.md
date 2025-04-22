@@ -56,7 +56,7 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 
 ### 🔐 Login using Vipps vs MetaMask
 - **MetaMask** is a popular Web3 wallet where **you manage your own private key**.
-- ⚠️ If you lose your private key, you lose access — permanently.
+- If you lose your private key, you lose access — permanently.
 - To make things easier, we offer **Vipps Login** — a method many users already know and trust.
 - It’s perfect for beginners: **no wallet setup, no seed phrases, just play!**
 
