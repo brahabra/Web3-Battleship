@@ -8,10 +8,8 @@ A Web3-enabled Battleship game that explores how Single Sign-On (SSO) using Vipp
 - [🎮 Game Details](#-game-details)
 - [🔐 Web3 Onboarding with Vipps SSO](#-web3-onboarding-with-vipps-sso)
 - [📲 How to Setup Vipps Test User](#-how-to-setup-vipps-test-user)
-- [📦 How to Run the Project](#-how-to-run-the-project)
-- [🧱 Tech Stack](#-tech-stack)
-- [🗂️ Code Structure](#️-code-structure)
 - [📘 Web3 and Game Overview](#-web3-and-game-overview)
+- [🧑‍💻 For Developers](#-for-developers)
 - [🖼️ Screenshots](#️-screenshots)
 
 ---
@@ -49,67 +47,6 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 
 - Phone: +47 93636402
 
-## 📦 How to Run the Project
-### 🚀 Frontend
-1. `cd frontend/vite-react`
-
-2. `npm install`
-
-3. `npm run dev`
-
-### 🛠 Backend
-1. `cd backend`
-
-2. `npm install`
-
-3. `npm run dev`
-
-## 🧱 Tech Stack
-
-### 🖥 Frontend
-- **React with Vite** – Fast and modern frontend tooling  
-- **TypeScript** – Type-safe JavaScript  
-- **Wagmi** – React hooks for Web3 integration
-- **Tailwind CSS** – Utility-first CSS framework for styling
-- **Mantine** - UI component library used for layout, modals, and form elements
-
-### 🛠 Backend
-- **Node.js + Express** – REST API for user and session handling  
-- **Vipps SSO** – Integration with Vipps' API for user authentication  
-- **MongoDB** – Database for storing user/session data (if used)
-
-### ⛓ Blockchain
-- **Solidity** – Smart contract language for the Battleship game logic  
-- **Sepolia Testnet** – Ethereum test network used for development with no real ETH required  
-
-
-## 🗂️ Code Structure
-```sh
-├── frontend/vite-react/                 # Vite + React frontend app
-│   ├── src/                             # Source code for the frontend
-│   │   ├── components/                  # Reusable React components
-│   │   ├── pages/                       # Page views (e.g., Home, Game)
-│   │   ├── hooks/                       # Custom React hooks
-│   │   ├── contexts/                    # React Contexts for global state
-│   │   ├── utils/                       # Utility functions and constants
-│   │   ├── types/                       # TypeScript type definitions
-│   │   ├── App.tsx                      # Main React app component
-│   │   ├── main.tsx                     # Entry point for the React app
-│   │   └── wagmi.ts                     # Wagmi config for blockchain interactions
-│
-├── backend/                             # Node.js / Express backend
-│   ├── routes/                          # API route definitions (e.g., auth, game)
-│   ├── controllers/                     # Logic for handling API requests
-│   ├── models/                          # Database models (optional)
-│   ├── config/                          # Config files (e.g., DB connection, env vars)
-│   └── server.js                        # Main entry point for the backend server
-│
-└── battleship-contract/                 # Smart contracts
-    └── contracts/                       # Solidity contract files
-        ├── Contract.sol                 # Multiplayer Battleship contract
-        └── SinglePlayerBattleship.sol   # Singleplayer Battleship contract
-```
-
 ## 📘 Web3 and Game Overview
 
 ### ⛓️ What is Web3?
@@ -137,6 +74,68 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 - We want to make Web3 **accessible and intuitive** — especially for newcomers.
 - By using **familiar login options like Vipps**, we reduce friction and make it easier to get started.
 - You’ll experience the **core benefits of Web3** without needing deep technical knowledge.
+
+## 🧑‍💻 For Developers
+### 📦 How to Run the Project
+#### 🚀 Frontend
+1. `cd frontend/vite-react`
+
+2. `npm install`
+
+3. `npm run dev`
+
+#### 🛠 Backend
+1. `cd backend`
+
+2. `npm install`
+
+3. `npm run dev`
+
+### 🧱 Tech Stack
+
+#### 🖥 Frontend
+- **React with Vite** – Fast and modern frontend tooling  
+- **TypeScript** – Type-safe JavaScript  
+- **Wagmi** – React hooks for Web3 integration
+- **Tailwind CSS** – Utility-first CSS framework for styling
+- **Mantine** - UI component library used for layout, modals, and form elements
+
+#### 🛠 Backend
+- **Node.js + Express** – REST API for user and session handling  
+- **Vipps SSO** – Integration with Vipps' API for user authentication  
+- **MongoDB** – Database for storing user/session data (if used)
+
+#### ⛓ Blockchain
+- **Solidity** – Smart contract language for the Battleship game logic  
+- **Sepolia Testnet** – Ethereum test network used for development with no real ETH required  
+
+
+### 🗂️ Code Structure
+```sh
+├── frontend/vite-react/                 # Vite + React frontend app
+│   ├── src/                             # Source code for the frontend
+│   │   ├── components/                  # Reusable React components
+│   │   ├── pages/                       # Page views (e.g., Home, Game)
+│   │   ├── hooks/                       # Custom React hooks
+│   │   ├── contexts/                    # React Contexts for global state
+│   │   ├── utils/                       # Utility functions and constants
+│   │   ├── types/                       # TypeScript type definitions
+│   │   ├── App.tsx                      # Main React app component
+│   │   ├── main.tsx                     # Entry point for the React app
+│   │   └── wagmi.ts                     # Wagmi config for blockchain interactions
+│
+├── backend/                             # Node.js / Express backend
+│   ├── routes/                          # API route definitions (e.g., auth, game)
+│   ├── controllers/                     # Logic for handling API requests
+│   ├── models/                          # Database models (optional)
+│   ├── config/                          # Config files (e.g., DB connection, env vars)
+│   └── server.js                        # Main entry point for the backend server
+│
+└── battleship-contract/                 # Smart contracts
+    └── contracts/                       # Solidity contract files
+        ├── Contract.sol                 # Multiplayer Battleship contract
+        └── SinglePlayerBattleship.sol   # Singleplayer Battleship contract
+```
 
 ## 🖼️ Screenshots
 
