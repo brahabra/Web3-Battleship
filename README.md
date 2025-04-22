@@ -2,17 +2,17 @@
 A Web3-enabled Battleship game that explores how Single Sign-On (SSO) using Vipps can lower the entry barrier for new users in the decentralized ecosystem. Built as part of a master thesis on user onboarding and trusted identity in Web3.
 
 ## 🎮 Game Details
-- 🚢 Our Battleship game includes both **singleplayer** and **multiplayer** modes — challenge a bot or compete against a friend.
+- Our Battleship game includes both **singleplayer** and **multiplayer** modes — challenge a bot or compete against a friend.
 
-- 📦 Both game modes are powered by **smart contracts** — one for singleplayer and one for multiplayer — ensuring transparent and decentralized gameplay.
+- Both game modes are powered by **smart contracts** — one for singleplayer and one for multiplayer — ensuring transparent and decentralized gameplay.
 
-- 🕹️ The singleplayer mode is a great way to explore Web3 features at your own pace.
+- The singleplayer mode is a great way to explore Web3 features at your own pace.
 
-- 🧾 All actions in the game (like placing ships or making moves) trigger blockchain transactions, giving users hands-on experience with decentralized apps.
+- All actions in the game (like placing ships or making moves) trigger blockchain transactions, giving users hands-on experience with decentralized apps.
 
-- 🛡️ When logging in with **Vipps**, the game automatically uses the **Sepolia testnet**, so you can interact with the blockchain without spending real money.
+- When logging in with **Vipps**, the game automatically uses the **Sepolia testnet**, so you can interact with the blockchain without spending real money.
 
-- 🦊 If you use **MetaMask**, you're free to connect to any Ethereum-compatible network — including Sepolia or even mainnet (though mainnet isn't required or recommended for this game).
+- If you use **MetaMask**, you're free to connect to any Ethereum-compatible network — including Sepolia or even mainnet (though mainnet isn't required or recommended for this game).
 
 ## 🔐 Web3 Onboarding with Vipps SSO
 To reduce onboarding friction, this project integrates **Vipps SSO** to allow users to sign in using a familiar Web2 login method — no wallet setup or private key management required. Here's how it works:
