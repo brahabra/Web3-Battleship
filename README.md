@@ -9,7 +9,7 @@ A Web3-enabled Battleship game that explores how Single Sign-On (SSO) using Vipp
 - [🔐 Web3 Onboarding with Vipps SSO](#-web3-onboarding-with-vipps-sso)
 - [📲 How to Setup Vipps Test User](#-how-to-setup-vipps-test-user)
 - [📘 Web3 and Game Overview](#-web3-and-game-overview)
-- [🧑‍💻 For Developers](#-for-developers)
+- [🧑‍💻 Developer Guide and Technical Overview](#-developer-guide-and-technical-overview)
 - [🖼️ Screenshots](#️-screenshots)
 
 ---
@@ -75,7 +75,7 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 - By using **familiar login options like Vipps**, we reduce friction and make it easier to get started.
 - You’ll experience the **core benefits of Web3** without needing deep technical knowledge.
 
-## 🧑‍💻 For Developers
+## 🧑‍💻 Developer Guide and Technical Overview
 ### 📦 How to Run the Project
 #### 🚀 Frontend
 1. `cd frontend/vite-react`
