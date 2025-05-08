@@ -27,8 +27,7 @@ const Multiplayer = () => {
         <div className="flex flex-col items-center gap-2.5">
           {!gameStarted && <GameLobby />}
           <h2
-            className={`font-bold text-2xl flex justify-center mt-40 mb-10 ${
-              moveMessage === "Opponent shot and hit!" ||
+            className={`font-bold text-2xl flex justify-center mt-40 mb-10 ${moveMessage === "Opponent shot and hit!" ||
               moveMessage === "You lost the game!"
                 ? "text-[rgb(220,60,60)]"
                 : ""
@@ -37,17 +36,26 @@ const Multiplayer = () => {
               moveMessage === "You won the game!"
                 ? "text-[rgb(0,200,100)]"
                 : ""
-            }`}
+              }`}
           >
             {moveMessage}
           </h2>
-          <div className="flex">
-            {bothPlayersPlacedShips && <GameStatsBox/>}
+          <div className="flex items-stretch space-x-4">
+            {bothPlayersPlacedShips && <GameStatsBox />}
             {gameStarted && <ShipPlacement />}
             {bothPlayersPlacedShips && <EnemyTerritory />}
           </div>
+          <div className="flex justify-center mt-8">
+            <h2
+              className={`text-2xl font-bold ${turnMessage === "Your turn" ? "text-[rgb(0,200,100)]" : ""
+                } ${turnMessage === "Opponent's turn" ? "text-[rgb(220,60,60)]" : ""
+                }`}
+            >
+              {turnMessage}
+            </h2>
+          </div>
           {!bothPlayersPlacedShips && (
-            <div className="flex justify-center font-bold text-2xl py-6">
+            <div className="flex justify-center font-bold text-2xl">
               {shipPlacementPlayer && (
                 <div>
                   {shipPlacementPlayer === account.address ? (
@@ -59,13 +67,6 @@ const Multiplayer = () => {
               )}
             </div>
           )}
-          <div className="font-bold text-2xl py-8 flex justify-center">
-            <h2
-              className={`${turnMessage === "Your turn" ? "text-[rgb(0,200,100)]" : ""}`}
-            >
-              {turnMessage}
-            </h2>
-          </div>
         </div>
       )}
     </div>

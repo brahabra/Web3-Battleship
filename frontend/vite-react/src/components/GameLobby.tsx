@@ -1,21 +1,97 @@
 import { Button, Loader } from "@mantine/core";
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useGameContext } from "../contexts/GameContext";
 import PersonIcon from '@mui/icons-material/Person';
 import { useEffect, useRef, useState } from "react";
 import useWatchContractEventListener from "../hooks/useWatchContractEventListener";
 import type { PlayerJoinedEvent } from "../types/eventTypes";
 import useGameWriteContract from "../hooks/useGameWriteContract";
+import { zeroAddress } from "viem";
+import { multiplayerContractAddress } from "../utils/contractAddress";
+import { multiplayerAbi } from "../utils/abi/multiplayerAbi";
+import axios from "axios";
+import { serverCheckVerifyURL } from "../utils/serverURL";
+import PlayerCard from "./PlayerCard";
 
 const GameLobby = () => {
   const account = useAccount();
 
-  const { setErrorMessage, firstPlayerJoined, setFirstPlayerJoined, secondPlayerJoined, setSecondPlayerJoined, setGameStarted, setShowGameUnderway, transactionCancelCount } = useGameContext();
-  
+  const { setErrorMessage, firstPlayerJoined, setFirstPlayerJoined, secondPlayerJoined, setSecondPlayerJoined, setGameStarted, setShowGameUnderway, transactionCancelCount, opponentInfoProps, setOpponentInfoProps, setPlayerInfoProps, playerInfoProps } = useGameContext();
+
   const executeWriteContract = useGameWriteContract();
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const timeoutRef = useRef<number | null>(null);
+
+  const [opponent, setOpponent] = useState("")
+  const { data: player1, error } = useReadContract({
+    address: multiplayerContractAddress,
+    abi: multiplayerAbi,
+    functionName: "player1"
+  })
+
+  useWatchContractEventListener({
+    eventName: "FirstPlayerJoined",
+    onEvent: (logs) => {
+      const address = logs[0].args.player
+      if (!isZeroAddress(address) && account.address !== address) {
+        setOpponent(address)
+      }
+    },
+  })
+
+  useEffect(() => {
+    if (!isZeroAddress(player1)) {
+      if (account.address !== player1) {
+        setOpponent(player1 ?? "")
+      }
+    }
+    if (opponent) {
+      verifyAddressAndInitProps(opponent,true)
+    }
+  }, [opponent, player1])
+
+  useEffect(() => {
+    if (account.address){
+      verifyAddressAndInitProps(account.address, false)
+    }
+  },[])
+
+  const verifyAddressAndInitProps = async (address: string, isOpponent: boolean) => {
+    try {
+      await axios
+        .get(serverCheckVerifyURL, { params: { address } })
+        .then((response) => {
+          if (response.status === 200) {
+            if (response.data.verified) {
+              if (isOpponent) {
+                setOpponentInfoProps({ address: address, name: response.data.name, isOpponent: true })
+              }
+              else {
+                setPlayerInfoProps({ address: address, name: response.data.name, isOpponent: false })
+              }
+            }
+          }
+        });
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        if (isOpponent) {
+          setOpponentInfoProps({ address: address, isOpponent: true })
+        }
+        else {
+          setPlayerInfoProps({ address: address, isOpponent: false })
+        }
+      } else {
+        console.error("Server Error")
+      }
+    }
+  }
+
+
+  const isZeroAddress = (address?: string) => {
+    return !address || address === zeroAddress
+  }
+
 
   const handleJoinGame = () => {
     setIsLoading(true)
@@ -29,10 +105,10 @@ const GameLobby = () => {
 
   useEffect(() => {
     setIsLoading(false)
-    if(timeoutRef.current) {
+    if (timeoutRef.current) {
       timeoutRef.current = null;
     }
-  },[transactionCancelCount])
+  }, [transactionCancelCount])
 
   useWatchContractEventListener({
     eventName: "FirstPlayerJoined",
@@ -46,7 +122,6 @@ const GameLobby = () => {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
           timeoutRef.current = null
-          console.log("Resetting timer: Join")
 
         }
         setIsLoading(false);
@@ -58,18 +133,23 @@ const GameLobby = () => {
     eventName: "SecondPlayerJoined",
     onEvent: (logs: PlayerJoinedEvent[]) => {
       const player = logs[0].args.player ?? "";
-
+  
+      if (account.address === firstPlayerJoined && player !== zeroAddress) {
+        setOpponent(player);
+        verifyAddressAndInitProps(player, true);
+      }
+  
       setSecondPlayerJoined(player);
       localStorage.setItem("secondPlayerJoined", JSON.stringify(player));
-
+  
       if (player === account.address) {
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current);
-          timeoutRef.current = null
+          timeoutRef.current = null;
         }
         setIsLoading(false);
       }
-    }
+    },
   });
 
   const checkGameUnderway = () => {
@@ -101,38 +181,47 @@ const GameLobby = () => {
   }, []);
 
   return (
-    <div className="mt-16">
-      {account.address === firstPlayerJoined ? (
-        <h2 className="font-bold text-2xl py-8">Waiting for opponent...</h2>
-      ) : (
-        <Button
-          variant="filled"
-          color="green"
-          size="xl"
-          radius="xl"
-          type="button"
-          onClick={handleJoinGame}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader />
-          ) : firstPlayerJoined ? (
-            <div className="flex gap-2">
-              <div className="flex">
-                <div className="mt-0.5">1</div>
-                <div>
-                  <PersonIcon />
-                </div>
+    <div className="mt-16 flex justify-center">
+      <div className="flex flex-col gap-4 w-full max-w-sm px-4">
+
+
+        {account.address === firstPlayerJoined && !secondPlayerJoined && (
+          <h2 className="text-white font-bold text-2xl text-center py-4">
+            Waiting for opponent…
+          </h2>
+        )}
+
+
+        {!(account.address === firstPlayerJoined && !secondPlayerJoined) && (
+          <Button
+            fullWidth
+            variant="filled"
+            color="green"
+            size="xl"
+            radius="xl"
+            onClick={handleJoinGame}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <Loader />
+            ) : opponentInfoProps.address !== zeroAddress ? (
+              <div className="flex items-center gap-2">
+                <PersonIcon /> <span>Join a game!</span>
               </div>
-              <div className="mt-0.5">Join a game!</div>
-            </div>
-          ) : (
-            <>Create a game!</>
-          )}
-        </Button>
-      )}
+            ) : (
+              "Create a game!"
+            )}
+          </Button>
+        )}
+
+        {opponentInfoProps.address !== zeroAddress && (
+          <PlayerCard {...opponentInfoProps} />
+        )}
+
+      </div>
     </div>
   );
+
 }
 
 
