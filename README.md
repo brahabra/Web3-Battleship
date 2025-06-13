@@ -58,6 +58,7 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 
 - NIN: 52035644113
 - Phone: +47 93636402
+<br>
 
 - NIN: 10065707239
 - Phone: +47 46984209
