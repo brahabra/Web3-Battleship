@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Register Routes
-app.use("/auth", authRoutes);    
+app.use("/auth", authRoutes);
 app.use("/account", accountRoutes);
 app.get("/", handleVippsCallback); // Fallback URL that Vipps uses is localhost:5173/
 
