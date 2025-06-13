@@ -54,10 +54,13 @@ This private key enables users to sign blockchain transactions without requiring
 ---
 
 ## 📲 How to Setup Vipps Test User
-Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#app-installation), and use this test user:
+Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/test-environment/#app-installation), and use one of these test users:
 
 - NIN: 52035644113
 - Phone: +47 93636402
+
+- NIN: 10065707239
+- Phone: +47 46984209
 
 ---
 
