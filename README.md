@@ -25,7 +25,7 @@ Our aim is to **bridge the gap between Web2 and Web3** by lowering the entry bar
 - [📲 How to Setup Vipps Test User](#-how-to-setup-vipps-test-user)
 - [🧑‍💻 Developer Guide and Technical Overview](#-developer-guide-and-technical-overview)
 - [🔍 Web3 and Game Overview](#-web3-and-game-overview)
-- [🖼️ Screenshots](#️-screenshots)
+- [🎥 Videos](#️-videos)
 
 ---
 
@@ -149,8 +149,16 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 
 ---
 
-## 🖼️ Screenshots
+## 🎥 Videos
+- Below are two videos demonstrating the onboarding and game progress using first Vipps and MetaMask
 
+- Vipps
+  
+[![Vipps Flow](https://img.youtube.com/vi/amSYrjJkS3g/0.jpg)](https://www.youtube.com/watch?v=amSYrjJkS3g)
+
+- MetaMask
+  
+[![Metamask Flow](https://img.youtube.com/vi/zhRDdU-IOKA/0.jpg)](https://www.youtube.com/watch?v=zhRDdU-IOKA)
 
 ---
 
