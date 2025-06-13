@@ -17,6 +17,8 @@ We built a fully functional **Battleship game** on the blockchain to test this i
 
 Our aim is to **bridge the gap between Web2 and Web3** by lowering the entry barrier and building trust through verified identities.
 
+A live demo is hosted [here](https://www.web3-battleship.no/)
+
 ---
 
 ## 🌟 Table of Contents
