@@ -1,5 +1,7 @@
 # 🛳️ Web3 Battleship with Vipps OIDC
 
+[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-web3--battleship.no-orange?style=for-the-badge&logo=ethereum)](https://www.web3-battleship.no/)
+
 ## *Toward Web3: Enhancing User Onboarding and Trust through Vipps OIDC*  
 *A Master's thesis exploring onboarding and identity in decentralized applications.*
 
@@ -16,8 +18,6 @@ We built a fully functional **Battleship game** on the blockchain to test this i
 - Learn about **transactions**, **gas**, and **wallets** in a gradual, playful way.
 
 Our aim is to **bridge the gap between Web2 and Web3** by lowering the entry barrier and building trust through verified identities.
-
-A live demo is hosted [here](https://www.web3-battleship.no/)
 
 ---
 
@@ -156,13 +156,13 @@ Follow this [guide](https://developer.vippsmobilepay.com/docs/knowledge-base/tes
 ---
 
 ## 🎥 Videos
-- Below are two videos demonstrating the onboarding and game progress using first Vipps and MetaMask
+Below are two videos demonstrating the onboarding and gameplay flow using both **Vipps** and **MetaMask**:
 
-- Vipps
+### Vipps
   
 [![Vipps Flow](https://img.youtube.com/vi/amSYrjJkS3g/0.jpg)](https://www.youtube.com/watch?v=amSYrjJkS3g)
 
-- MetaMask
+### MetaMask
   
 [![Metamask Flow](https://img.youtube.com/vi/zhRDdU-IOKA/0.jpg)](https://www.youtube.com/watch?v=zhRDdU-IOKA)
 
