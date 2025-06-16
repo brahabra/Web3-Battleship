@@ -16,7 +16,7 @@ export const config = createConfig({
   ssr: true,
   transports: {
     [mainnet.id]: http(mainnetRPC),
-    [sepolia.id]: webSocket(sepoliaWsRPC),
+    [sepolia.id]: http(sepoliaRPC),
   },
 })
 
