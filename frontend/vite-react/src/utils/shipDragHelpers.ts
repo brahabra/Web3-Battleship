@@ -13,7 +13,7 @@ export const getIntendedCoordinates = (
   const col = Number(parts[2]);
   const coordinates: [number, number][] = [];
 
-  if (!shipOrientations[shipID]) {
+  if (shipOrientations[shipID]) {
     // Horizontal placement:
     if (col + lengthOfShip > 10) return [];
     for (let c = col; c < col + lengthOfShip; c++) {
